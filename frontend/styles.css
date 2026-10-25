@@ -39,7 +39,10 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
+  /* clip, not hidden: hidden makes this a scroll container, and focusing a too-wide child
+     scrolled the whole screen sideways out of view (the blank OTP screen bug) */
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 button, input { font: inherit; color: inherit; }
@@ -62,6 +65,11 @@ button { cursor: pointer; border: 0; background: none; }
   min-height: 36px; padding: 0 14px; border-radius: 999px; font-weight: 700; font-size: 15px; color: var(--soil-2);
 }
 .lang button[aria-pressed="true"] { background: var(--soil); color: var(--cream); }
+
+/* Small phones (under 360 px): the app name and the language toggle don't both fit, so keep the logo only */
+@media (max-width: 359px) {
+  .brand span { display: none; }
+}
 
 /* Buttons */
 .btn {

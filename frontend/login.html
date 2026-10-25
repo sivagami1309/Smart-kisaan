@@ -34,9 +34,10 @@
     }
     .phone input::placeholder { color: #c4b49b; letter-spacing: .04em; }
 
-    .otp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    /* minmax(0, 1fr) + width:100%: inputs have a built-in minimum width that would otherwise overflow the row */
+    .otp { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .otp input {
-      height: 72px; text-align: center; font-size: 32px; font-weight: 800; border-radius: 16px;
+      width: 100%; min-width: 0; height: 72px; text-align: center; font-size: 32px; font-weight: 800; border-radius: 16px;
       border: 2px solid var(--line); background: var(--cream); outline: none;
     }
     .otp input:focus { border-color: var(--paddy); background: #fff; }
