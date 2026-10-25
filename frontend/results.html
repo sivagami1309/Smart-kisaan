@@ -186,7 +186,7 @@
   const T = {
     ta: {
       demo: 'DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு', back: 'பின்செல்', speak: 'சத்தமாகப் படி',
-      title: c => `${c} விலை`, place: 'மணப்பாறை அருகில்', change: 'மாற்று',
+      title: c => `${c} விலை`, place: n => `${n} அருகில்`, change: 'மாற்று',
       best: 'கையில் அதிகம் கிடைக்கும்', perKg: '/ கிலோ', km: n => `${n} கி.மீ`, gross: v => `சந்தை விலை ₹${v}`,
       dirs: 'வழி காட்டு', share: 'பகிர்', allTitle: 'எல்லா சந்தைகளும் · கையில் கிடைப்பது',
       missingTitle: 'இன்று விலை வரவில்லை', noReport: 'இன்று விலை இல்லை',
@@ -205,7 +205,7 @@
     },
     en: {
       demo: 'DEMO DATA – NOT LIVE MARKET PRICES', back: 'Back', speak: 'Read aloud',
-      title: c => `${c} prices`, place: 'Near Manapparai', change: 'Change',
+      title: c => `${c} prices`, place: n => `Near ${n}`, change: 'Change',
       best: 'Most money in hand', perKg: '/ kg', km: n => `${n} km`, gross: v => `Mandi price ₹${v}`,
       dirs: 'Directions', share: 'Share', allTitle: 'All mandis · money in hand',
       missingTitle: 'No price reported today', noReport: 'No report today',
@@ -258,6 +258,7 @@
     document.querySelectorAll('[data-i18n-label]').forEach(el => el.setAttribute('aria-label', t[el.dataset.i18nLabel]));
     $('crop-ico').textContent = crop.ico;
     $('crop-title').textContent = t.title(lang === 'ta' ? crop.ta : crop.en);
+    document.querySelector('[data-i18n="place"]').textContent = t.place(SK.placeName(lang));
     document.querySelectorAll('[data-r]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.r) === radius)));
     $('assume-text').innerHTML = t.assume(cost.rate, cost.load, cost.comm);
   }

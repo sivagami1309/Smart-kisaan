@@ -114,3 +114,41 @@ test('live data replaces demo data, and mandis without a live price are listed a
     s.close();
   }
 });
+
+// ---- Bugs found in testing (each written to fail before the fix) ----
+
+test('bug: built-in object names are not valid crops, places or mandis', async () => {
+  for (const q of ['crop=__proto__', 'crop=toString', 'crop=tomato&place=constructor', 'crop=tomato&place=__proto__']) {
+    assert.equal((await get('/api/prices?' + q)).status, 400, q);
+  }
+  assert.equal((await get('/api/trend?crop=tomato&mandi=__proto__')).status, 400);
+  assert.equal((await post('/api/offer-check', { crop: 'hasOwnProperty', offer: 15 })).status, 400);
+});
+
+test('bug: distances are the same in both directions for measured roads', async () => {
+  const { body } = await get('/api/prices?crop=tomato&place=trichy');
+  assert.equal(body.ranked.find(r => r.mandi === 'manapparai').km, 42);
+  assert.equal(body.ranked.find(r => r.mandi === 'trichy').km, 0);
+});
+
+test('bug: demo data rolls forward when the server runs past midnight', async () => {
+  let day = '2026-10-25';
+  const d = openDb();
+  seedDemo(d, day);
+  const s = createApp({ db: d, today: () => day });
+  await new Promise(r => s.listen(0, '127.0.0.1', r));
+  try {
+    day = '2026-10-26';
+    const body = await (await fetch(`http://127.0.0.1:${s.address().port}/api/prices?crop=tomato`)).json();
+    assert.equal(body.dataState.asOf, '2026-10-26');
+    assert.equal(body.ranked[0].mandi, 'trichy');
+    assert.equal(body.ranked[0].freshness, 'today');
+  } finally {
+    s.close();
+  }
+});
+
+test('bug: screens answer GET only', async () => {
+  const r = await fetch(base + '/login.html', { method: 'POST' });
+  assert.equal(r.status, 405);
+});

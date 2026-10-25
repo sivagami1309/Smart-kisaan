@@ -224,14 +224,13 @@
     const best = res.best, { kind, gapPerKg: gap, gapTotal } = res.verdict;
     const mname = lang === 'ta' ? best.ta : best.en;
     const big = kind === 'low' ? t.lowBig(money(gap)) : kind === 'fair' ? t.fairBig : t.goodBig;
-    const total = kind === 'low' ? t.lowTotal(qty, Math.round(gapTotal).toLocaleString('en-IN')) : kind === 'fair' ? t.fairTotal(money(gap)) : t.goodTotal;
-
+    const total = kind === 'low' ? (qty > 0 ? t.lowTotal(qty, Math.round(gapTotal).toLocaleString('en-IN')) : '') : kind === 'fair' ? t.fairTotal(money(gap)) : t.goodTotal;
     $('verdict').className = 'verdict ' + kind;
     $('verdict').hidden = false;
     $('verdict').innerHTML = `
       <span class="tag">${t[kind]}</span>
       <span class="big">${big}</span>
-      <span class="total">${total}</span>
+      ${total ? `<span class="total">${total}</span>` : ''}
       <div class="compare">
         <div><span>${t.trader}</span><b>₹${money(offer)}</b></div>
         <div><span>${t.inHand(mname)}</span><b>₹${money(best.net)}</b></div>

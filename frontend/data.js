@@ -8,6 +8,12 @@ const SK = (() => {
     banana: { ico: '🍌', ta: 'வாழை', en: 'Banana', code: 'BAN' },
     groundnut: { ico: '🥜', ta: 'நிலக்கடலை', en: 'Groundnut', code: 'GNT' },
   };
+  const PLACES = {
+    manapparai: { ta: 'மணப்பாறை', en: 'Manapparai' },
+    trichy: { ta: 'திருச்சி', en: 'Trichy' },
+    dindigul: { ta: 'திண்டுக்கல்', en: 'Dindigul' },
+    karur: { ta: 'கரூர்', en: 'Karur' },
+  };
   const DEFAULT_COST = { rate: 25, load: 500, comm: 8 };
 
   const store = {
@@ -21,7 +27,8 @@ const SK = (() => {
   }
   const saveCost = c => store.set('sk-cost', JSON.stringify(c));
   const radius = () => Number(store.get('sk-radius')) || 100;
-  const place = () => store.get('sk-place') || 'manapparai';
+  const place = () => { const p = store.get('sk-place'); return Object.hasOwn(PLACES, p ?? '') ? p : 'manapparai'; };
+  const placeName = lang => PLACES[place()][lang === 'en' ? 'en' : 'ta'];
 
   async function api(path, body) {
     const res = await fetch(path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined);
@@ -61,5 +68,5 @@ const SK = (() => {
     }
   }
 
-  return { CROPS, DEFAULT_COST, store, loadCost, saveCost, radius, place, prices, trend, offerCheck, sms, health, day, banner };
+  return { CROPS, PLACES, DEFAULT_COST, store, loadCost, saveCost, radius, place, placeName, prices, trend, offerCheck, sms, health, day, banner };
 })();

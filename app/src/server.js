@@ -16,10 +16,14 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 
 class BadRequest extends Error {}
 
-// Road distance for the pilot village, else straight line × 1.3
+// Only a config table's own keys count: "__proto__" or "toString" must not look like a crop
+const has = (table, key) => typeof key === 'string' && Object.hasOwn(table, key);
+
+// Measured road distance (either direction), else straight line × 1.3
 function distanceKm(placeKey, mandiKey) {
   const p = PLACES[placeKey], m = MANDIS[mandiKey];
-  if (p.roadKm?.[mandiKey] != null) return p.roadKm[mandiKey];
+  const road = p.roadKm?.[mandiKey] ?? (has(PLACES, mandiKey) ? PLACES[mandiKey].roadKm?.[placeKey] : undefined);
+  if (road != null) return road;
   const rad = x => (x * Math.PI) / 180;
   const a = Math.sin(rad(m.lat - p.lat) / 2) ** 2 + Math.cos(rad(p.lat)) * Math.cos(rad(m.lat)) * Math.sin(rad(m.lon - p.lon) / 2) ** 2;
   return Math.round(2 * 6371 * Math.asin(Math.sqrt(a)) * 1.3);
@@ -27,9 +31,9 @@ function distanceKm(placeKey, mandiKey) {
 
 function readOptions(q) {
   const crop = q.crop ?? 'tomato';
-  if (!CROPS[crop]) throw new BadRequest(`unknown crop: ${crop}`);
+  if (!has(CROPS, crop)) throw new BadRequest(`unknown crop: ${crop}`);
   const place = q.place ?? 'manapparai';
-  if (!PLACES[place]) throw new BadRequest(`unknown place: ${place}`);
+  if (!has(PLACES, place)) throw new BadRequest(`unknown place: ${place}`);
   const numberIn = (name, min, max, dflt) => {
     if (q[name] == null || q[name] === '') return dflt;
     const v = Number(q[name]);
@@ -62,6 +66,16 @@ async function readJson(req) {
 export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR }) {
   const root = resolve(frontendDir);
 
+  // Demo history is dated relative to "today"; when the date changes (server left running
+  // past midnight), extend it so demo prices don't all turn stale. Live data is never touched.
+  let demoDay = null;
+  function rollDemo() {
+    const t = today();
+    if (t === demoDay) return;
+    if (dataState(db, t).source === 'demo') seedDemo(db, t);
+    demoDay = t;
+  }
+
   const routes = {
     'GET /api/health': () => ({ ok: true, today: today(), dataState: dataState(db, today()), lastIngestion: lastIngestion(db) }),
     'GET /api/crops': () => ({ crops: Object.entries(CROPS).map(([key, c]) => ({ key, ta: c.ta, en: c.en, ico: c.ico, code: c.code })) }),
@@ -69,7 +83,7 @@ export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR }
     'GET /api/prices': q => prices(db, today(), readOptions(q)),
     'GET /api/trend': q => {
       const { crop } = readOptions(q);
-      if (!MANDIS[q.mandi]) throw new BadRequest(`unknown mandi: ${q.mandi}`);
+      if (!has(MANDIS, q.mandi)) throw new BadRequest(`unknown mandi: ${q.mandi}`);
       const days = Math.min(30, Math.max(2, Number(q.days) || 7));
       const ds = dataState(db, today());
       return { crop, mandi: q.mandi, dataState: ds, points: trend(db, crop, q.mandi, ds.source, days, today()).map(p => ({ date: p.date, modal: perKg(p.modalQ) })) };
@@ -121,7 +135,11 @@ export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR }
   return http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     try {
-      if (!url.pathname.startsWith('/api/')) return await serveStatic(url.pathname, res);
+      if (!url.pathname.startsWith('/api/')) {
+        if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { error: 'method not allowed' });
+        return await serveStatic(url.pathname, res);
+      }
+      rollDemo();
       const handler = routes[`${req.method} ${url.pathname}`];
       if (!handler) return send(res, 404, { error: 'not found' });
       const body = req.method === 'POST' ? await readJson(req) : {};

@@ -237,6 +237,8 @@
     });
     document.getElementById('hello').textContent = T[lang].hello;
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    // The chip shows the place and distance actually used for prices (set in "Me")
+    document.querySelector('[data-i18n="loc"]').textContent = `${SK.placeName(lang)} · ${SK.radius()} ${lang === 'en' ? 'km' : 'கி.மீ'}`;
     if (lastHealth) { SK.banner(lastHealth.dataState, lang); document.querySelector('[data-i18n="source"]').textContent = sourceText(lastHealth.dataState, lang); }
   }
   document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; store.set('sk-lang', lang); applyLang(); }));
