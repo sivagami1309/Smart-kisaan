@@ -30,7 +30,17 @@ const UI = (() => {
   }
 
   const offline = en ? 'No connection to the server.' : 'சர்வர் இணைப்பு இல்லை.';
-  const errText = e => (e && e.status ? e.message : offline);
+  // Server messages are English; Tamil screens show a plain Tamil message for each kind of error.
+  // raw = true keeps the exact server message (used on the English-only admin screen).
+  const TA_ERR = {
+    400: 'விவரம் சரியில்லை: எண்களையும் தேதியையும் சரிபார்க்கவும்.', 401: 'அனுமதி இல்லை.', 403: 'இதைச் செய்ய அனுமதி இல்லை.',
+    404: 'கிடைக்கவில்லை.', 409: 'ஏற்கனவே பதிவாகியுள்ளது, அல்லது இந்த நிலையில் முடியாது.', 503: 'சேவை இப்போது கிடைக்கவில்லை. சிறிது நேரம் கழித்து முயலுங்கள்.',
+  };
+  const errText = (e, raw = false) => {
+    if (!e || !e.status) return offline;
+    if (raw || en) return e.message;
+    return TA_ERR[e.status] ?? 'ஏதோ தவறு. மீண்டும் முயலுங்கள்.';
+  };
 
   return { lang, en, esc, rs, mandi, crop, origin, day, time, apply, toast, errText, MANDIS };
 })();

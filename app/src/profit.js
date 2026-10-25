@@ -5,9 +5,9 @@ export function profitFor({ qtyKg, pricePerKg, transport, commissionPct, loading
   if (!(qtyKg > 0)) throw new RangeError('quantity must be more than 0 kg');
   if (!(pricePerKg > 0)) throw new RangeError('price must be more than ₹0');
   for (const [name, v] of Object.entries({ transport, loading, other })) {
-    if (!(v >= 0)) throw new RangeError(`${name} cannot be negative`);
+    if (!(v >= 0)) throw new RangeError(`${name} must be a number of 0 or more`);
   }
-  if (!(commissionPct >= 0 && commissionPct <= 30)) throw new RangeError('commission must be 0–30%');
+  if (!(commissionPct >= 0 && commissionPct <= 30)) throw new RangeError('commission must be a number from 0 to 30%');
 
   const gross = round2(qtyKg * pricePerKg);
   const commission = round2((gross * commissionPct) / 100);

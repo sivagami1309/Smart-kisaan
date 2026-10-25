@@ -1,4 +1,5 @@
 // In-app notifications (earlier project's NotificationsPage). The phone turns `kind` into Tamil or English text.
+import { ApiError } from './errors.js';
 
 export function notify(db, recipients, kind, poolId, actorName, at) {
   const stmt = db.prepare('INSERT INTO notifications (farmer, kind, pool_id, actor_name, created_at) VALUES (?, ?, ?, ?, ?)');
@@ -12,13 +13,14 @@ export function notificationsOf(db, farmer) {
   return { items, unread };
 }
 
-// Only the owner's notifications change; ids belonging to someone else are ignored
+// No ids: mark all read. A list (possibly empty): only those. Only the owner's notifications change.
 export function markRead(db, farmer, ids) {
-  if (Array.isArray(ids) && ids.length) {
+  if (ids === undefined) {
+    db.prepare('UPDATE notifications SET read = 1 WHERE farmer = ?').run(farmer);
+  } else {
+    if (!Array.isArray(ids)) throw new ApiError(400, 'bad_ids', 'ids must be a list of notification ids');
     const stmt = db.prepare('UPDATE notifications SET read = 1 WHERE farmer = ? AND id = ?');
     for (const id of ids.slice(0, 200)) stmt.run(farmer, Number(id));
-  } else {
-    db.prepare('UPDATE notifications SET read = 1 WHERE farmer = ?').run(farmer);
   }
   return notificationsOf(db, farmer).unread;
 }

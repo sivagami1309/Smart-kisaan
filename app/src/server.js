@@ -93,7 +93,11 @@ function profitView(db, today, q) {
 async function readJson(req) {
   let size = 0; const chunks = [];
   for await (const c of req) { size += c.length; if (size > 10_000) throw new BadRequest('body too large'); chunks.push(c); }
-  try { return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { throw new BadRequest('invalid JSON'); }
+  let body;
+  try { body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { throw new ApiError(400, 'bad_body', 'invalid JSON'); }
+  // Handlers read fields from an object; null, arrays, strings and numbers are refused here
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) throw new ApiError(400, 'bad_body', 'request body must be a JSON object');
+  return body;
 }
 
 export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR, weather = createWeather(), adminToken = process.env.SK_ADMIN_TOKEN || '' }) {

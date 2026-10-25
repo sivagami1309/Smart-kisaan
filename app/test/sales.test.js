@@ -143,3 +143,34 @@ test('completing a shared sale records it for every real member, with their tran
   assert.equal(theirSale.qtyKg, 250);
   assert.ok((await notes(ME)).body.items.some(n => n.poolId === pool.id && n.kind === 'POOL_SOLD'));
 });
+
+// ---- Bugs found in the second testing round (each failed before its fix) ----
+
+const raw = async (path, text, as = ME) => {
+  const r = await fetch(base + path, { method: 'POST', headers: { 'content-type': 'application/json', 'x-farmer-id': as }, body: text });
+  return { status: r.status, body: await r.json() };
+};
+
+test('bug: a request body that is not a JSON object is a 400, never a server error', async () => {
+  for (const [path, text] of [['/api/sales', 'null'], ['/api/pools', 'null'], ['/api/sms/simulate', 'null'], ['/api/listings', '[1,2]'], ['/api/offer-check', '"hi"'], ['/api/sales', '42']]) {
+    const r = await raw(path, text);
+    assert.equal(r.status, 400, `${path} ${text}`);
+    assert.equal(r.body.code, 'bad_body');
+  }
+});
+
+test('bug: marking notifications read needs a list; an empty list marks nothing', async () => {
+  const pool = await realPool();
+  const unreadBefore = (await notes(OTHER)).body.unread;
+  assert.ok(unreadBefore >= 1);
+  assert.equal((await call('POST', '/api/notifications/read', { as: OTHER, body: { ids: '5' } })).status, 400);
+  assert.equal((await call('POST', '/api/notifications/read', { as: OTHER, body: { ids: [] } })).body.unread, unreadBefore);
+  const one = (await notes(OTHER)).body.items.find(n => n.poolId === pool.id).id;
+  assert.equal((await call('POST', '/api/notifications/read', { as: OTHER, body: { ids: [one] } })).body.unread, unreadBefore - 1);
+});
+
+test('bug: a cost that is not a number says so, not "cannot be negative"', async () => {
+  const r = await sale(ME, { transport: 'abc' });
+  assert.equal(r.status, 400);
+  assert.match(r.body.error, /number/);
+});

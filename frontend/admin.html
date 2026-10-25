@@ -77,6 +77,8 @@
   const esc = UI.esc;
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
   $('pDate').value = today; $('pDate').max = today;
+  // This screen is English-only, so times are English whatever the app language is
+  const enTime = iso => new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const row = (cells, head) => `<tr>${cells.map(c => head ? `<th>${c}</th>` : `<td>${c}</td>`).join('')}</tr>`;
 
   async function open() {
@@ -84,7 +86,7 @@
     try { s = await SK.admin.get('summary'); }
     catch (e) {
       $('login').hidden = false; $('console').hidden = true;
-      $('loginErr').textContent = e.code === 'admin_disabled' ? 'Admin is switched off: set SK_ADMIN_TOKEN in .env and restart.' : e.status === 401 ? 'Wrong password.' : UI.errText(e);
+      $('loginErr').textContent = e.code === 'admin_disabled' ? 'Admin is switched off: set SK_ADMIN_TOKEN in .env and restart.' : e.status === 401 ? 'Wrong password.' : UI.errText(e, true);
       return;
     }
     $('login').hidden = true; $('console').hidden = false;
@@ -94,10 +96,10 @@
     $('kpis').innerHTML = [['Farmers', s.counts.farmers], ['Listings', s.counts.listings], ['Sales', s.counts.sales], ['Price rows', s.counts.prices]]
       .map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('') + `<div style="grid-column:1/-1"><small>Shared sales</small><b style="font-size:16px">${esc(pools)}</b></div>`;
     $('runs').innerHTML = row(['When', 'Source', 'Result', 'Rows', 'Message'], true) + (s.ingestion.length
-      ? s.ingestion.map(r => row([esc(UI.time(r.at)), esc(r.source), r.ok ? '✔ ok' : '✖ failed', r.inserted, esc(r.message)])).join('')
+      ? s.ingestion.map(r => row([esc(enTime(r.at)), esc(r.source), r.ok ? '✔ ok' : '✖ failed', r.inserted, esc(r.message)])).join('')
       : row(['—', '', 'No runs yet', '', 'Add DATA_GOV_IN_API_KEY to .env to import Agmarknet prices']));
     const f = (await SK.admin.get('farmers')).farmers;
-    $('farmers').innerHTML = row(['Name', 'Listings', 'Sales', 'Last seen'], true) + (f.length ? f.map(x => row([esc(x.name ?? '(no name)'), x.listings, x.sales, x.lastSeen ? esc(UI.time(x.lastSeen)) : '—'])).join('') : row(['No farmers yet', '', '', '']));
+    $('farmers').innerHTML = row(['Name', 'Listings', 'Sales', 'Last seen'], true) + (f.length ? f.map(x => row([esc(x.name ?? '(no name)'), x.listings, x.sales, x.lastSeen ? esc(enTime(x.lastSeen)) : '—'])).join('') : row(['No farmers yet', '', '', '']));
     const p = (await SK.admin.get('pools')).pools;
     $('pools').innerHTML = row(['Crop', 'Mandi', 'State', 'kg', 'Saving', 'Farmers'], true) + (p.length ? p.map(x => row([esc(x.crop), esc(x.mandi), esc(x.state), x.totalKg, `₹${UI.rs(x.saving)}`, esc(x.names.join(', '))])).join('') : row(['No shared sales yet', '', '', '', '', '']));
   }
@@ -111,7 +113,7 @@
       await SK.admin.price({ date: $('pDate').value, mandi: $('pMandi').value, crop: $('pCrop').value, minPerKg: $('pMin').value, modalPerKg: $('pModal').value, maxPerKg: $('pMax').value });
       $('priceMsg').textContent = '✔ Saved. It now counts as real data on every screen.';
       open();
-    } catch (err) { $('priceMsg').textContent = '✖ ' + UI.errText(err); }
+    } catch (err) { $('priceMsg').textContent = '✖ ' + UI.errText(err, true); }
   });
 
   if (SK.adminToken.get()) open();
