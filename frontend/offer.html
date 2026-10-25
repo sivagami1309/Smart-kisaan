@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Offer check</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    main { flex: 1; padding: 4px 16px 112px; display: flex; flex-direction: column; gap: 18px; }
+    .head { display: flex; align-items: center; gap: 8px; padding: 12px 8px 0; }
+    .icon-btn { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; flex: none; }
+    .head h1 { font-size: 22px; font-weight: 800; line-height: 1.2; }
+
+    .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chips button {
+      flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 14px;
+      border-radius: 999px; border: 2px solid var(--line); background: var(--card); font-weight: 800; font-size: 16px;
+    }
+    .chips button[aria-pressed="true"] { border-color: var(--paddy); background: var(--paddy-tint); color: var(--paddy-deep); }
+
+    .card { background: var(--card); border: 2px solid var(--line); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .card label { font-weight: 800; font-size: 18px; }
+    .money { display: flex; align-items: center; border: 2px solid var(--line); border-radius: 16px; background: var(--cream); overflow: hidden; }
+    .money:focus-within { border-color: var(--paddy); background: #fff; }
+    .money .pre, .money .post { padding: 0 14px; font-weight: 800; color: var(--soil-2); font-size: 22px; }
+    .money .pre { font-size: 32px; color: var(--soil); }
+    .money input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; height: 76px; font-size: 40px; font-weight: 800; letter-spacing: -0.01em; }
+    .money input::placeholder { color: #cdbda3; }
+    .qty .money input { height: 60px; font-size: 26px; }
+    .quick { display: flex; gap: 8px; flex-wrap: wrap; }
+    .quick button { min-height: 40px; padding: 0 14px; border-radius: 12px; background: var(--cream); border: 2px solid var(--line); font-weight: 700; font-size: 15px; }
+
+    .verdict { border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .verdict[hidden] { display: none; }
+    .verdict.low { background: #fbe5e1; border: 2px solid #eab0a6; }
+    .verdict.fair { background: var(--turmeric-tint); border: 2px solid #f3d38c; }
+    .verdict.good { background: var(--paddy-tint); border: 2px solid #b8d2b0; }
+    .verdict .tag { align-self: flex-start; font-size: 14px; font-weight: 800; padding: 4px 12px; border-radius: 999px; color: #fff; }
+    .verdict.low .tag { background: var(--tomato); }
+    .verdict.fair .tag { background: #9a6a00; }
+    .verdict.good .tag { background: var(--paddy); }
+    .verdict .big { font-size: 34px; font-weight: 800; line-height: 1.15; }
+    .verdict .total { font-size: 19px; font-weight: 700; }
+    .verdict .vs { font-size: 16px; color: var(--soil-2); }
+
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+    .compare div { background: rgba(255,255,255,.7); border-radius: 14px; padding: 10px 12px; }
+    .compare span { display: block; font-size: 13px; font-weight: 700; color: var(--soil-2); }
+    .compare b { font-size: 24px; font-weight: 800; }
+
+    .say { background: var(--soil); color: var(--cream); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .say[hidden] { display: none; }
+    .say .lbl { font-size: 13px; font-weight: 800; letter-spacing: .06em; color: var(--turmeric); text-transform: uppercase; }
+    .say p { font-size: 20px; font-weight: 700; line-height: 1.4; }
+    .say .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .say button { min-height: 48px; border-radius: 12px; border: 2px solid rgba(251,246,236,.35); color: var(--cream); font-weight: 800; font-size: 16px; }
+
+    .note { font-size: 14px; color: var(--soil-2); }
+
+    .nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px;
+      display: grid; grid-template-columns: repeat(3, 1fr); background: var(--card); border-top: 2px solid var(--line);
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); z-index: 10;
+    }
+    .nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 60px; justify-content: center; border-radius: 14px; color: var(--soil-2); text-decoration: none; font-size: 14px; font-weight: 700; }
+    .nav a[aria-current="page"] { color: var(--paddy-deep); background: var(--paddy-tint); }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-banner" role="status">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z" fill="#2e2016"/><path d="M12 10v5M12 18v.5" stroke="#f0a91b" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <span data-sk-banner>DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு</span>
+  </div>
+
+  <header class="head">
+    <a class="icon-btn" href="home.html" aria-label="Back">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <h1 data-i18n="title">வியாபாரி விலை சரியா?</h1>
+  </header>
+
+  <main>
+    <div class="chips" id="chips" role="group" aria-label="Crop"></div>
+
+    <section class="card">
+      <label for="offer" data-i18n="offerLabel">வியாபாரி சொன்ன விலை</label>
+      <div class="money"><span class="pre">₹</span><input id="offer" inputmode="decimal" placeholder="0.00" autocomplete="off"><span class="post" data-i18n="perKg">/ கிலோ</span></div>
+      <div class="qty">
+        <label for="qty" data-i18n="qtyLabel" style="display:block;margin-bottom:8px;font-size:16px">எவ்வளவு கிலோ விற்கிறீர்கள்?</label>
+        <div class="money"><input id="qty" inputmode="numeric" style="padding-left:14px"><span class="post" data-i18n="kg">கிலோ</span></div>
+      </div>
+      <div class="quick" id="quick"></div>
+    </section>
+
+    <section class="verdict" id="verdict" hidden aria-live="polite"></section>
+
+    <section class="say" id="say" hidden>
+      <span class="lbl" data-i18n="sayLbl">வியாபாரியிடம் காட்டுங்கள்</span>
+      <p id="say-text"></p>
+      <div class="row">
+        <button type="button" id="speak" data-i18n="speak">சத்தமாகப் படி</button>
+        <button type="button" id="share" data-i18n="share">WhatsApp-இல் பகிர்</button>
+      </div>
+    </section>
+
+    <p class="note" data-i18n="note">இது ஒரு மதிப்பீடு. யாருக்கு விற்பது என்பது உங்கள் முடிவு — கடன், பணம் உடனே கிடைப்பது போன்றவற்றையும் யோசியுங்கள்.</p>
+  </main>
+
+  <nav class="nav" aria-label="Main">
+    <a href="home.html">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9Z" fill="currentColor"/></svg>
+      <span data-i18n="navHome">முகப்பு</span>
+    </a>
+    <a href="offer.html" aria-current="page">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M9 8h6M9 11h6M13 11c0 2.5-1.6 3.5-4 3.5l4.5 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i18n="navOffer">விலை சரிபார்</span>
+    </a>
+    <a href="settings.html">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>
+      <span data-i18n="navMe">நான்</span>
+    </a>
+  </nav>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const T = {
+    ta: {
+      demo: 'DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு', title: 'வியாபாரி விலை சரியா?',
+      offerLabel: 'வியாபாரி சொன்ன விலை', perKg: '/ கிலோ', qtyLabel: 'எவ்வளவு கிலோ விற்கிறீர்கள்?', kg: 'கிலோ',
+      sayLbl: 'வியாபாரியிடம் காட்டுங்கள்', speak: 'சத்தமாகப் படி', share: 'WhatsApp-இல் பகிர்',
+      note: 'இது ஒரு மதிப்பீடு. யாருக்கு விற்பது என்பது உங்கள் முடிவு — கடன், பணம் உடனே கிடைப்பது போன்றவற்றையும் யோசியுங்கள்.',
+      navHome: 'முகப்பு', navOffer: 'விலை சரிபார்', navMe: 'நான்',
+      low: 'குறைவான விலை', fair: 'ஏறக்குறைய சரி', good: 'நல்ல விலை',
+      lowBig: g => `கிலோவுக்கு ₹${g} குறைவு`, fairBig: 'சந்தை விலைக்கு அருகில்', goodBig: 'சந்தைகளை விட அதிகம்!',
+      lowTotal: (q, v) => `${q} கிலோவுக்கு சுமார் ₹${v} குறைவாகக் கிடைக்கும்`,
+      goodTotal: 'பயணச் செலவும் இல்லை. விற்கலாம்.', fairTotal: v => `வித்தியாசம் கிலோவுக்கு ₹${v} மட்டுமே`,
+      vs: (m, k, d) => `சிறந்த சந்தை: ${m} · ${k} கி.மீ · ${d} விலை`,
+      trader: 'வியாபாரி', inHand: m => `${m} (கையில்)`,
+      sayLow: (c, m, v) => `இன்று ${m} சந்தையில் ${c} கிலோவுக்கு சுமார் ₹${v} கையில் கிடைக்கிறது. அந்த விலைக்கு அருகில் தர முடியுமா?`,
+      sayOk: (c, m, v) => `இன்று ${m} சந்தையில் ${c} கிலோவுக்கு சுமார் ₹${v}. உங்கள் விலை நியாயமாக இருக்கிறது.`,
+      months: ['ஜன', 'பிப்', 'மார்', 'ஏப்', 'மே', 'ஜூன்', 'ஜூலை', 'ஆக', 'செப்', 'அக்', 'நவ', 'டிச'],
+    },
+    en: {
+      demo: 'DEMO DATA – NOT LIVE MARKET PRICES', title: "Is the trader's price fair?",
+      offerLabel: "Trader's offer", perKg: '/ kg', qtyLabel: 'How many kg are you selling?', kg: 'kg',
+      sayLbl: 'Show this to the trader', speak: 'Read aloud', share: 'Share on WhatsApp',
+      note: 'This is an estimate. Who you sell to is your decision; think about loans and how fast you get paid too.',
+      navHome: 'Home', navOffer: 'Offer check', navMe: 'Me',
+      low: 'Low offer', fair: 'About right', good: 'Good offer',
+      lowBig: g => `₹${g} less per kg`, fairBig: 'Close to the mandi price', goodBig: 'Better than the mandis!',
+      lowTotal: (q, v) => `About ₹${v} less for ${q} kg`,
+      goodTotal: 'And no travel cost. Worth selling.', fairTotal: v => `Only ₹${v} per kg difference`,
+      vs: (m, k, d) => `Best mandi: ${m} · ${k} km · price of ${d}`,
+      trader: 'Trader', inHand: m => `${m} (in hand)`,
+      sayLow: (c, m, v) => `Today at ${m}, ${c} gives about ₹${v} per kg in hand. Can you come closer to that?`,
+      sayOk: (c, m, v) => `Today at ${m}, ${c} is about ₹${v} per kg. Your price is fair.`,
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    },
+  };
+  const lang = SK.store.get('sk-lang') || 'ta';
+  const t = T[lang];
+  const $ = id => document.getElementById(id);
+  const money = v => v.toFixed(2);
+  const day = d => `${Number(d.slice(8))} ${t.months.at(Number(d.slice(5, 7)) - 1)}`;
+  const cost = SK.loadCost();
+  let cropKey = new URLSearchParams(location.search).get('crop') || SK.store.get('sk-crop') || 'tomato';
+  if (!SK.CROPS[cropKey]) cropKey = 'tomato';
+
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => { const v = t[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
+  $('qty').value = cost.load;
+
+  function chips() {
+    $('chips').innerHTML = Object.entries(SK.CROPS).map(([k, c]) =>
+      `<button type="button" data-k="${k}" aria-pressed="${k === cropKey}"><span aria-hidden="true">${c.ico}</span>${lang === 'ta' ? c.ta : c.en}</button>`).join('');
+    $('chips').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      cropKey = b.dataset.k; SK.store.set('sk-crop', cropKey); chips(); loadBest();
+    }));
+  }
+
+  // Quick picks around the best price, so the farmer types less
+  let bestNet = null;
+  function quick() {
+    $('quick').innerHTML = bestNet ? [-3, -1.5, 0].map(d => {
+      const v = Math.max(0, Math.round((bestNet + d) * 2) / 2).toFixed(2);
+      return `<button type="button" data-v="${v}">₹${v}</button>`;
+    }).join('') : '';
+    $('quick').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { $('offer').value = b.dataset.v; update(); }));
+  }
+
+  async function loadBest() {
+    try {
+      const p = await SK.prices(cropKey);
+      SK.banner(p.dataState, lang);
+      bestNet = p.ranked[0]?.net ?? null;
+    } catch { bestNet = null; }
+    quick(); update();
+  }
+
+  let line = '', timer, seq = 0;
+  const hide = () => { $('verdict').hidden = true; $('say').hidden = true; };
+  function update() { clearTimeout(timer); timer = setTimeout(check, 200); }
+
+  // The verdict comes from the server (POST /api/offer-check), so it uses the same rules as every screen
+  async function check() {
+    const crop = SK.CROPS[cropKey];
+    const cname = lang === 'ta' ? crop.ta : crop.en;
+    const offer = parseFloat($('offer').value);
+    const qty = Math.max(0, parseFloat($('qty').value) || 0);
+    if (!(offer > 0)) return hide();
+    const my = ++seq;
+    let res;
+    try { res = await SK.offerCheck(cropKey, offer, qty); } catch { return hide(); }
+    if (my !== seq) return;
+    if (!res.best || !res.verdict) return hide();
+
+    const best = res.best, { kind, gapPerKg: gap, gapTotal } = res.verdict;
+    const mname = lang === 'ta' ? best.ta : best.en;
+    const big = kind === 'low' ? t.lowBig(money(gap)) : kind === 'fair' ? t.fairBig : t.goodBig;
+    const total = kind === 'low' ? t.lowTotal(qty, Math.round(gapTotal).toLocaleString('en-IN')) : kind === 'fair' ? t.fairTotal(money(gap)) : t.goodTotal;
+
+    $('verdict').className = 'verdict ' + kind;
+    $('verdict').hidden = false;
+    $('verdict').innerHTML = `
+      <span class="tag">${t[kind]}</span>
+      <span class="big">${big}</span>
+      <span class="total">${total}</span>
+      <div class="compare">
+        <div><span>${t.trader}</span><b>₹${money(offer)}</b></div>
+        <div><span>${t.inHand(mname)}</span><b>₹${money(best.net)}</b></div>
+      </div>
+      <span class="vs">${t.vs(mname, best.km, day(best.date))}</span>`;
+
+    line = (kind === 'good' ? t.sayOk : t.sayLow)(cname, mname, money(best.net));
+    $('say-text').textContent = line;
+    $('say').hidden = false;
+  }
+
+  $('offer').addEventListener('input', update);
+  $('qty').addEventListener('input', update);
+  $('speak').addEventListener('click', () => {
+    if (!line || !('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(line); u.lang = lang === 'ta' ? 'ta-IN' : 'en-IN';
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  });
+  $('share').addEventListener('click', () => {
+    if (line) window.open('https://wa.me/?text=' + encodeURIComponent(line), '_blank', 'noopener');
+  });
+
+  chips();
+  loadBest();
+</script>
+</body>
+</html>

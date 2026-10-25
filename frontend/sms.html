@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2e2016">
+  <title>Smart Kisaan – SMS (simulated)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body, html { background: #e9e1d1; }
+    .app { background: #e9e1d1; }
+    .sim-banner {
+      display: block; text-align: center; padding: 8px 16px; line-height: 1.4;
+      background: repeating-linear-gradient(-45deg, #2e2016 0 12px, #3b2a1e 12px 24px); color: var(--turmeric);
+      font-size: 13px; font-weight: 800; letter-spacing: .06em;
+    }
+    .bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--soil); color: var(--cream); }
+    .bar a { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; }
+    .bar .av { width: 40px; height: 40px; border-radius: 50%; background: var(--paddy); display: grid; place-items: center; font-weight: 800; font-size: 15px; }
+    .bar b { display: block; font-size: 17px; }
+    .bar span { font-size: 13px; opacity: .8; }
+
+    .thread { flex: 1; padding: 16px 12px 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .msg { max-width: 82%; padding: 10px 14px; border-radius: 18px; font-size: 17px; line-height: 1.45; white-space: pre-line; box-shadow: 0 1px 0 rgba(46,32,22,.08); }
+    .msg.in { align-self: flex-start; background: #fffdf8; border-bottom-left-radius: 6px; }
+    .msg.out { align-self: flex-end; background: var(--paddy); color: #fff; border-bottom-right-radius: 6px; font-weight: 800; letter-spacing: .04em; }
+    .meta { font-size: 12px; color: var(--soil-2); font-weight: 700; margin-top: -4px; }
+    .meta.in { align-self: flex-start; padding-left: 6px; }
+    .meta.out { align-self: flex-end; padding-right: 6px; }
+
+    .codes { display: flex; gap: 8px; padding: 0 12px 8px; overflow-x: auto; scrollbar-width: none; }
+    .codes button { flex: none; min-height: 44px; padding: 0 14px; border-radius: 12px; background: #fffdf8; border: 2px solid var(--line); font-weight: 800; font-size: 15px; }
+    .compose { display: flex; gap: 8px; padding: 8px 12px calc(12px + env(safe-area-inset-bottom)); background: #f3ecdf; border-top: 2px solid var(--line); }
+    .compose input { flex: 1; min-width: 0; height: 52px; border-radius: 26px; border: 2px solid var(--line); background: #fff; padding: 0 18px; font-size: 18px; font-weight: 700; text-transform: uppercase; outline: none; }
+    .compose input:focus { border-color: var(--paddy); }
+    .compose button { width: 52px; height: 52px; border-radius: 50%; background: var(--paddy); display: grid; place-items: center; flex: none; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="sim-banner" role="status">SIMULATED SMS · <span data-i18n="sim">மாதிரி — உண்மை SMS அனுப்பப்படவில்லை</span></div>
+  <header class="bar">
+    <a href="settings.html" aria-label="Back"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#fbf6ec" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <span class="av" aria-hidden="true">SK</span>
+    <span><b>SK-KISAN</b><span data-i18n="sub">விலை SMS சேவை (மாதிரி)</span></span>
+  </header>
+
+  <div class="thread" id="thread" aria-live="polite"></div>
+
+  <div class="codes" id="codes" role="group" aria-label="Crop codes"></div>
+  <form class="compose" id="compose">
+    <input id="text" maxlength="20" autocomplete="off" aria-label="Message" placeholder="TOM">
+    <button type="submit" aria-label="Send"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 21 12 3 4l2 7 9 1-9 1-2 7Z" fill="#fff"/></svg></button>
+  </form>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const T = {
+    ta: {
+      sim: 'மாதிரி — உண்மை SMS அனுப்பப்படவில்லை', sub: 'விலை SMS சேவை (மாதிரி)',
+      help: 'பயிர் குறியீட்டை அனுப்புங்கள்:\nTOM தக்காளி · ONI வெங்காயம்\nPAD நெல் · BAN வாழை · GNT நிலக்கடலை',
+      head: (c, d) => `${c} ${d} கையில் ₹/கிலோ:`, demo: '(மாதிரி)', none: 'அருகில் இன்று விலை இல்லை.',
+      unknown: 'புரியவில்லை.', count: (n, s) => `${n} எழுத்து · ${s} SMS`,
+      months: ['ஜன', 'பிப்', 'மார்', 'ஏப்', 'மே', 'ஜூன்', 'ஜூலை', 'ஆக', 'செப்', 'அக்', 'நவ', 'டிச'],
+    },
+    en: {
+      sim: 'demo — no real SMS is sent', sub: 'Price SMS service (simulated)',
+      help: 'Send a crop code:\nTOM tomato · ONI onion\nPAD paddy · BAN banana · GNT groundnut',
+      head: (c, d) => `${c} ${d} in hand Rs/kg:`, demo: '(demo)', none: 'No price nearby today.',
+      unknown: "Didn't understand.", count: (n, s) => `${n} chars · ${s} SMS`,
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    },
+  };
+  const lang = SK.store.get('sk-lang') || 'ta';
+  const t = T[lang];
+  const $ = id => document.getElementById(id);
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => { const v = t[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
+  // Tamil text is sent as Unicode: 70 characters in one SMS, 67 per part when split
+  const segments = s => /^[\n\r\x20-\x7E]*$/.test(s) ? (s.length <= 160 ? 1 : Math.ceil(s.length / 153)) : (s.length <= 70 ? 1 : Math.ceil(s.length / 67));
+
+  function add(text, dir, segs) {
+    const m = document.createElement('div'); m.className = 'msg ' + dir; m.textContent = text;
+    const meta = document.createElement('div'); meta.className = 'meta ' + dir;
+    meta.textContent = dir === 'in' ? t.count(text.length, segs ?? segments(text)) : new Date().toTimeString().slice(0, 5);
+    $('thread').append(m, meta);
+    $('thread').scrollTop = $('thread').scrollHeight;
+  }
+
+  // The reply is built by the server (POST /api/sms/simulate), the same code a real SMS gateway would call
+  async function send(code) {
+    code = code.trim().toUpperCase(); if (!code) return;
+    add(code, 'out');
+    try {
+      const r = await SK.sms(code, lang);
+      add(r.reply, 'in', r.segments);
+    } catch {
+      add(lang === 'ta' ? 'சர்வர் இணைப்பு இல்லை.' : 'No connection to the server.', 'in');
+    }
+  }
+
+  $('codes').innerHTML = Object.values(SK.CROPS).map(c => `<button type="button" data-c="${c.code}">${c.ico} ${c.code}</button>`).join('');
+  $('codes').querySelectorAll('button').forEach(b => b.addEventListener('click', () => send(b.dataset.c)));
+  $('compose').addEventListener('submit', e => { e.preventDefault(); send($('text').value); $('text').value = ''; });
+
+  add(t.help, 'in');
+</script>
+</body>
+</html>

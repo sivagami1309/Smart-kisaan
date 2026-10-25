@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .hero { position: relative; height: 140px; margin-top: 4px; }
+    .hero svg { width: 100%; height: 100%; display: block; }
+
+    .panel {
+      flex: 1; background: var(--card); border-radius: 28px 28px 0 0; margin-top: -28px; position: relative;
+      padding: 24px 20px 28px; box-shadow: 0 -1px 0 var(--line);
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    h1 { font-size: 27px; line-height: 1.15; font-weight: 800; letter-spacing: -0.01em; }
+    .lead { color: var(--soil-2); font-size: 18px; margin-top: 6px; }
+
+    label.field-label { font-weight: 700; font-size: 17px; display: block; margin-bottom: 8px; }
+    .phone {
+      display: flex; align-items: stretch; border: 2px solid var(--line); border-radius: 16px; background: var(--cream);
+      transition: border-color .15s ease;
+    }
+    .phone:focus-within { border-color: var(--paddy); background: #fff; }
+    .phone .cc { display: flex; align-items: center; padding: 0 14px; font-weight: 800; font-size: 22px; border-right: 2px solid var(--line); color: var(--soil-2); }
+    .phone input {
+      flex: 1; min-width: 0; border: 0; background: transparent; outline: none;
+      height: 64px; padding: 0 14px; font-size: 26px; font-weight: 700; letter-spacing: .08em;
+    }
+    .phone input::placeholder { color: #c4b49b; letter-spacing: .04em; }
+
+    .otp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .otp input {
+      height: 72px; text-align: center; font-size: 32px; font-weight: 800; border-radius: 16px;
+      border: 2px solid var(--line); background: var(--cream); outline: none;
+    }
+    .otp input:focus { border-color: var(--paddy); background: #fff; }
+
+    .hint { font-size: 15px; color: var(--soil-2); display: flex; gap: 8px; align-items: flex-start; }
+    .hint svg { flex: none; margin-top: 3px; }
+
+    .or { display: flex; align-items: center; gap: 12px; color: var(--soil-2); font-weight: 700; font-size: 15px; }
+    .or::before, .or::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+
+    .sim { font-size: 13px; font-weight: 800; color: var(--soil); background: var(--turmeric-tint); border: 1.5px dashed var(--turmeric); border-radius: 10px; padding: 6px 10px; align-self: flex-start; }
+    .link { color: var(--paddy-deep); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; font-size: 16px; min-height: 44px; }
+    .step[hidden] { display: none; }
+    .step { display: flex; flex-direction: column; gap: 18px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#2f6b3a"/><path d="M20 31V18" stroke="#fbf6ec" stroke-width="3" stroke-linecap="round"/><path d="M20 20c0-6 4-10 10-10 0 6-4 10-10 10Z" fill="#f0a91b"/><path d="M20 23c0-5-3.5-8.5-9-8.5 0 5 3.5 8.5 9 8.5Z" fill="#fbf6ec"/></svg>
+      <span data-i18n="brand">ஸ்மார்ட் கிசான்</span>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="ta" aria-pressed="true">தமிழ்</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <!-- Dawn over the fields: the hour farmers check prices -->
+  <div class="hero" aria-hidden="true">
+    <svg viewBox="0 0 430 210" preserveAspectRatio="xMidYMax slice">
+      <circle cx="300" cy="118" r="46" fill="#f0a91b"/>
+      <circle cx="300" cy="118" r="70" fill="#f0a91b" opacity=".18"/>
+      <path d="M0 132 C70 112 140 120 215 132 S360 150 430 126 V210 H0Z" fill="#8fb36b"/>
+      <path d="M0 158 C90 140 190 146 270 160 S390 172 430 156 V210 H0Z" fill="#4f8a45"/>
+      <path d="M0 184 C110 170 220 176 320 188 S410 194 430 186 V210 H0Z" fill="#2f6b3a"/>
+      <g stroke="#1f4d29" stroke-width="2" stroke-linecap="round" opacity=".55">
+        <path d="M40 196 l-6 -14 M52 194 l0 -15 M64 196 l6 -14"/>
+        <path d="M150 192 l-6 -14 M162 190 l0 -15 M174 192 l6 -14"/>
+        <path d="M262 196 l-6 -14 M274 194 l0 -15 M286 196 l6 -14"/>
+        <path d="M372 198 l-6 -14 M384 196 l0 -15 M396 198 l6 -14"/>
+      </g>
+    </svg>
+  </div>
+
+  <main class="panel">
+    <div>
+      <h1 data-i18n="title">இன்றைய சந்தை விலை, உங்கள் கையில்</h1>
+      <p class="lead" data-i18n="lead">அருகிலுள்ள சந்தைகளில் உங்கள் பயிருக்கு கையில் கிடைக்கும் விலையை ஒப்பிடுங்கள்.</p>
+    </div>
+
+    <!-- Step 1: phone number -->
+    <form class="step" id="step-phone" novalidate>
+      <div>
+        <label class="field-label" for="phone" data-i18n="phoneLabel">கைபேசி எண்</label>
+        <div class="phone">
+          <span class="cc">+91</span>
+          <input id="phone" inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="98765 43210" aria-describedby="why">
+        </div>
+      </div>
+      <button class="btn btn-primary" id="send" type="submit" disabled data-i18n="sendOtp">OTP அனுப்பவும்</button>
+      <p class="hint" id="why">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z" fill="#2f6b3a"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <span data-i18n="why">விலை எச்சரிக்கை அனுப்ப மட்டுமே உங்கள் எண் பயன்படும். விலை பார்க்க உள்நுழைவு தேவையில்லை.</span>
+      </p>
+    </form>
+
+    <!-- Step 2: OTP (simulated in the prototype) -->
+    <form class="step" id="step-otp" hidden novalidate>
+      <span class="sim" data-i18n="sim">மாதிரி OTP · எந்த 4 இலக்கமும் போதும்</span>
+      <div>
+        <label class="field-label" id="otp-label" data-i18n="otpLabel">உங்கள் எண்ணுக்கு வந்த 4 இலக்க OTP</label>
+        <p class="lead" style="font-size:16px;margin:-4px 0 10px" id="sent-to"></p>
+        <div class="otp" role="group" aria-labelledby="otp-label">
+          <input inputmode="numeric" autocomplete="one-time-code" aria-label="1">
+          <input inputmode="numeric" aria-label="2">
+          <input inputmode="numeric" aria-label="3">
+          <input inputmode="numeric" aria-label="4">
+        </div>
+      </div>
+      <button class="btn btn-primary" id="verify" type="submit" disabled data-i18n="verify">உள்நுழையவும்</button>
+      <button class="link" type="button" id="change" data-i18n="change">எண்ணை மாற்றவும்</button>
+    </form>
+
+    <div class="or" data-i18n="or">அல்லது</div>
+    <button class="btn btn-ghost" id="skip" type="button" data-i18n="skip">உள்நுழையாமல் தொடரவும்</button>
+  </main>
+</div>
+
+<script>
+  const T = {
+    ta: {
+      brand: 'ஸ்மார்ட் கிசான்', title: 'இன்றைய சந்தை விலை, உங்கள் கையில்',
+      lead: 'அருகிலுள்ள சந்தைகளில் உங்கள் பயிருக்கு கையில் கிடைக்கும் விலையை ஒப்பிடுங்கள்.',
+      phoneLabel: 'கைபேசி எண்', sendOtp: 'OTP அனுப்பவும்',
+      why: 'விலை எச்சரிக்கை அனுப்ப மட்டுமே உங்கள் எண் பயன்படும். விலை பார்க்க உள்நுழைவு தேவையில்லை.',
+      sim: 'மாதிரி OTP · எந்த 4 இலக்கமும் போதும்', otpLabel: 'உங்கள் எண்ணுக்கு வந்த 4 இலக்க OTP',
+      sentTo: n => `+91 ${n} எண்ணுக்கு அனுப்பப்பட்டது`, verify: 'உள்நுழையவும்', change: 'எண்ணை மாற்றவும்',
+      or: 'அல்லது', skip: 'உள்நுழையாமல் தொடரவும்',
+    },
+    en: {
+      brand: 'Smart Kisaan', title: "Today's market price, in your hand",
+      lead: 'Compare what you will actually get for your crop at nearby mandis.',
+      phoneLabel: 'Mobile number', sendOtp: 'Send OTP',
+      why: 'Your number is used only for price alerts. You can see prices without logging in.',
+      sim: 'Simulated OTP · any 4 digits work', otpLabel: 'Enter the 4-digit OTP sent to you',
+      sentTo: n => `Sent to +91 ${n}`, verify: 'Log in', change: 'Change number',
+      or: 'or', skip: 'See prices without logging in',
+    },
+  };
+  const store = {
+    get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  };
+  let lang = store.get('sk-lang') || 'ta';
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const v = T[lang][el.dataset.i18n];
+      if (typeof v === 'string') el.textContent = v;
+    });
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    const n = phone.value; if (n) sentTo.textContent = T[lang].sentTo(fmt(n));
+  }
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; store.set('sk-lang', lang); applyLang(); }));
+
+  const phone = document.getElementById('phone');
+  const send = document.getElementById('send');
+  const sentTo = document.getElementById('sent-to');
+  const stepPhone = document.getElementById('step-phone');
+  const stepOtp = document.getElementById('step-otp');
+  const otpInputs = [...document.querySelectorAll('.otp input')];
+  const verify = document.getElementById('verify');
+  const fmt = n => n.replace(/(\d{5})(\d{0,5})/, '$1 $2').trim();
+
+  phone.addEventListener('input', () => {
+    phone.value = phone.value.replace(/\D/g, '').slice(0, 10);
+    send.disabled = !/^[6-9]\d{9}$/.test(phone.value);
+  });
+  stepPhone.addEventListener('submit', e => {
+    e.preventDefault(); if (send.disabled) return;
+    sentTo.textContent = T[lang].sentTo(fmt(phone.value));
+    stepPhone.hidden = true; stepOtp.hidden = false; otpInputs[0].focus();
+  });
+  otpInputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      // Spread a pasted or auto-filled code across the boxes
+      const digits = inp.value.replace(/\D/g, '');
+      inp.value = digits.slice(0, 1);
+      [...digits.slice(1)].forEach((d, j) => { if (otpInputs[i + 1 + j]) otpInputs[i + 1 + j].value = d; });
+      const next = otpInputs[Math.min(i + Math.max(digits.length, 1), otpInputs.length - 1)];
+      if (digits) next.focus();
+      verify.disabled = otpInputs.some(x => !x.value);
+    });
+    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && otpInputs[i - 1]) otpInputs[i - 1].focus(); });
+  });
+  document.getElementById('change').addEventListener('click', () => { stepOtp.hidden = true; stepPhone.hidden = false; phone.focus(); });
+  stepOtp.addEventListener('submit', e => {
+    e.preventDefault(); if (verify.disabled) return;
+    store.set('sk-user', phone.value); location.href = 'home.html';
+  });
+  document.getElementById('skip').addEventListener('click', () => { store.set('sk-user', ''); location.href = 'home.html'; });
+
+  applyLang();
+</script>
+</body>
+</html>

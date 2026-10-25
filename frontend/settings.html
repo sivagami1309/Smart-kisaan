@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Me</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    main { flex: 1; padding: 12px 16px 112px; display: flex; flex-direction: column; gap: 16px; }
+    h1 { font-size: 30px; font-weight: 800; padding: 8px 4px 0; }
+    .group { background: var(--card); border: 2px solid var(--line); border-radius: 20px; overflow: hidden; }
+    .group h2 { font-size: 14px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--soil-2); padding: 14px 16px 4px; }
+    .item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; min-height: 64px; }
+    .item + .item { border-top: 2px solid #f1e8d8; }
+    .item .lbl { font-weight: 700; font-size: 17px; line-height: 1.25; }
+    .item .lbl small { display: block; font-weight: 600; font-size: 14px; color: var(--soil-2); }
+    .account { display: flex; align-items: center; gap: 14px; padding: 18px 16px; }
+    .avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--paddy-tint); display: grid; place-items: center; flex: none; }
+    .account .who { flex: 1; min-width: 0; }
+    .account .who b { display: block; font-size: 20px; font-weight: 800; }
+    .account .who span { font-size: 14px; color: var(--soil-2); font-weight: 600; }
+    .pill { min-height: 44px; padding: 0 16px; border-radius: 999px; font-weight: 800; font-size: 15px; white-space: nowrap; }
+    .pill.solid { background: var(--paddy); color: #fff; }
+    .pill.line { border: 2px solid var(--line); color: var(--soil); }
+
+    .seg { display: inline-flex; background: var(--cream); border: 2px solid var(--line); border-radius: 999px; padding: 3px; flex: none; }
+    .seg button { min-height: 38px; padding: 0 12px; border-radius: 999px; font-weight: 800; font-size: 14px; color: var(--soil-2); }
+    .seg button[aria-pressed="true"] { background: var(--soil); color: var(--cream); }
+
+    select, .num {
+      height: 48px; border: 2px solid var(--line); border-radius: 12px; background: var(--cream);
+      font: inherit; font-weight: 800; font-size: 16px; color: var(--soil);
+    }
+    select { padding: 0 10px; max-width: 170px; }
+    .num { width: 96px; text-align: center; font-size: 20px; }
+    select:focus, .num:focus { outline: none; border-color: var(--paddy); background: #fff; }
+
+    .switch { position: relative; width: 56px; height: 32px; flex: none; }
+    .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+    .switch span { position: absolute; inset: 0; border-radius: 999px; background: #d9ccb6; transition: background .15s; pointer-events: none; }
+    .switch span::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .15s; }
+    .switch input:checked + span { background: var(--paddy); }
+    .switch input:checked + span::after { transform: translateX(24px); }
+    .switch input:disabled + span { opacity: .5; }
+    .switch input:focus-visible + span { outline: 3px solid var(--turmeric); outline-offset: 2px; }
+
+    a.item { color: inherit; text-decoration: none; }
+    .chev { flex: none; }
+    .reset { color: var(--paddy-deep); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; font-size: 15px; }
+    .foot { font-size: 14px; color: var(--soil-2); padding: 0 4px; }
+
+    .nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px;
+      display: grid; grid-template-columns: repeat(3, 1fr); background: var(--card); border-top: 2px solid var(--line);
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); z-index: 10;
+    }
+    .nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 60px; justify-content: center; border-radius: 14px; color: var(--soil-2); text-decoration: none; font-size: 14px; font-weight: 700; }
+    .nav a[aria-current="page"] { color: var(--paddy-deep); background: var(--paddy-tint); }
+  </style>
+</head>
+<body>
+<div class="app">
+  <main>
+    <h1 data-i18n="title">நான்</h1>
+
+    <section class="group">
+      <div class="account">
+        <span class="avatar" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#2f6b3a"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="#2f6b3a"/></svg></span>
+        <span class="who"><b id="who"></b><span id="who-sub"></span></span>
+        <button class="pill" id="auth" type="button"></button>
+      </div>
+    </section>
+
+    <section class="group">
+      <h2 data-i18n="gPrefs">விருப்பங்கள்</h2>
+      <div class="item">
+        <span class="lbl" data-i18n="lang">மொழி</span>
+        <div class="seg" role="group" aria-label="Language">
+          <button type="button" data-lang="ta">தமிழ்</button>
+          <button type="button" data-lang="en">English</button>
+        </div>
+      </div>
+      <div class="item" id="location">
+        <label class="lbl" for="place"><span data-i18n="place">என் ஊர்</span><small data-i18n="placeSub">மாதிரி தரவு: மணப்பாறை மட்டும்</small></label>
+        <select id="place">
+          <option value="manapparai">மணப்பாறை</option>
+          <option value="trichy">திருச்சி</option>
+          <option value="dindigul">திண்டுக்கல்</option>
+          <option value="karur">கரூர்</option>
+        </select>
+      </div>
+      <div class="item">
+        <span class="lbl" data-i18n="radius">தேடும் தூரம்</span>
+        <div class="seg" role="group" aria-label="Distance">
+          <button type="button" data-r="25">25</button>
+          <button type="button" data-r="50">50</button>
+          <button type="button" data-r="100">100 கி.மீ</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="group">
+      <h2 data-i18n="gCost">என் செலவு</h2>
+      <div class="item"><label class="lbl" for="rate"><span data-i18n="rate">வண்டி வாடகை</span><small data-i18n="rateSub">₹ / கி.மீ</small></label><input class="num" id="rate" inputmode="decimal"></div>
+      <div class="item"><label class="lbl" for="load"><span data-i18n="load">சரக்கு அளவு</span><small data-i18n="loadSub">கிலோ</small></label><input class="num" id="load" inputmode="numeric"></div>
+      <div class="item"><label class="lbl" for="comm"><span data-i18n="comm">கமிஷன்</span><small>%</small></label><input class="num" id="comm" inputmode="decimal"></div>
+      <div class="item"><span class="lbl"><small data-i18n="costNote">இவை மதிப்பீடுகள். உங்கள் உண்மை செலவை உள்ளிடுங்கள்.</small></span><button class="reset" id="reset" type="button" data-i18n="reset">இயல்புநிலை</button></div>
+    </section>
+
+    <section class="group">
+      <h2 data-i18n="gAlerts">எச்சரிக்கை & SMS</h2>
+      <div class="item">
+        <label class="lbl" for="alerts"><span data-i18n="alerts">தினமும் காலை 6 மணி விலை</span><small id="alerts-sub"></small></label>
+        <span class="switch"><input type="checkbox" id="alerts" role="switch"><span></span></span>
+      </div>
+      <a class="item" href="sms.html">
+        <span class="lbl"><span data-i18n="sms">SMS மூலம் விலை</span><small data-i18n="smsSub">சாதாரண கைபேசிக்கு · மாதிரி</small></span>
+        <svg class="chev" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </section>
+
+    <p class="foot" data-i18n="source">விலை ஆதாரம்: Agmarknet (data.gov.in). நேரடி இணைப்பு இன்னும் சோதிக்கப்படவில்லை. இப்போது காட்டப்படுவது மாதிரி தரவு.</p>
+  </main>
+
+  <nav class="nav" aria-label="Main">
+    <a href="home.html">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9Z" fill="currentColor"/></svg>
+      <span data-i18n="navHome">முகப்பு</span>
+    </a>
+    <a href="offer.html">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M9 8h6M9 11h6M13 11c0 2.5-1.6 3.5-4 3.5l4.5 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i18n="navOffer">விலை சரிபார்</span>
+    </a>
+    <a href="settings.html" aria-current="page">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>
+      <span data-i18n="navMe">நான்</span>
+    </a>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const T = {
+    ta: {
+      title: 'நான்', gPrefs: 'விருப்பங்கள்', lang: 'மொழி', place: 'என் ஊர்', placeSub: 'மாதிரி தரவு: மணப்பாறை மட்டும்',
+      radius: 'தேடும் தூரம்', gCost: 'என் செலவு', rate: 'வண்டி வாடகை', rateSub: '₹ / கி.மீ',
+      load: 'சரக்கு அளவு', loadSub: 'கிலோ', comm: 'கமிஷன்', costNote: 'இவை மதிப்பீடுகள். உங்கள் உண்மை செலவை உள்ளிடுங்கள்.',
+      reset: 'இயல்புநிலை', gAlerts: 'எச்சரிக்கை & SMS', alerts: 'தினமும் காலை 6 மணி விலை',
+      alertsIn: 'விரைவில் · SMS பதிவு (DLT) தேவை', alertsOut: 'எச்சரிக்கைக்கு உள்நுழையவும்',
+      sms: 'SMS மூலம் விலை', smsSub: 'சாதாரண கைபேசிக்கு · மாதிரி',
+      source: 'விலை ஆதாரம்: Agmarknet (data.gov.in). நேரடி இணைப்பு இன்னும் சோதிக்கப்படவில்லை. இப்போது காட்டப்படுவது மாதிரி தரவு.',
+      navHome: 'முகப்பு', navOffer: 'விலை சரிபார்', navMe: 'நான்',
+      guest: 'விருந்தினர்', guestSub: 'விலை பார்க்க உள்நுழைவு தேவையில்லை', login: 'உள்நுழை', logout: 'வெளியேறு',
+      userSub: 'விலை எச்சரிக்கைக்கு மட்டும்', saved: 'சேமிக்கப்பட்டது', soonAlerts: 'எச்சரிக்கை விரைவில் வரும் (SMS பதிவு தேவை).',
+    },
+    en: {
+      title: 'Me', gPrefs: 'Preferences', lang: 'Language', place: 'My village', placeSub: 'Demo data: Manapparai only',
+      radius: 'Search distance', gCost: 'My costs', rate: 'Vehicle hire', rateSub: '₹ per km',
+      load: 'Load', loadSub: 'kg', comm: 'Commission', costNote: 'These are estimates. Enter what you really pay.',
+      reset: 'Reset', gAlerts: 'Alerts & SMS', alerts: 'Daily price at 6 a.m.',
+      alertsIn: 'Coming soon · needs SMS (DLT) registration', alertsOut: 'Log in for alerts',
+      sms: 'Prices by SMS', smsSub: 'For basic phones · simulated',
+      source: 'Price source: Agmarknet (data.gov.in). Live connection not yet tested. Showing demo data.',
+      navHome: 'Home', navOffer: 'Offer check', navMe: 'Me',
+      guest: 'Guest', guestSub: 'No login needed to see prices', login: 'Log in', logout: 'Log out',
+      userSub: 'Used only for price alerts', saved: 'Saved', soonAlerts: 'Alerts are coming soon (SMS registration needed).',
+    },
+  };
+
+  // Data source line follows the server's data state: live, cached (not live) or demo
+  let lastHealth = null;
+  function sourceText(ds, lang) {
+    const d = ds.asOf ? SK.day(ds.asOf, lang) : '';
+    if (ds.state === 'live') return lang === 'en' ? `Prices: Agmarknet (data.gov.in), updated ${d}.` : `விலை ஆதாரம்: Agmarknet (data.gov.in), ${d} புதுப்பிப்பு.`;
+    if (ds.state === 'cached') return lang === 'en' ? `Not live: showing the last prices, from ${d}.` : `நேரடி இல்லை: ${d} அன்றைய கடைசி விலை காட்டப்படுகிறது.`;
+    return lang === 'en' ? 'Prices: demo data. Agmarknet (data.gov.in) connects once an API key is added.' : 'விலை: மாதிரி தரவு. API key சேர்த்தவுடன் Agmarknet (data.gov.in) இணையும்.';
+  }
+
+  const $ = id => document.getElementById(id);
+  const store = SK.store;
+  let lang = store.get('sk-lang') || 'ta';
+
+  const toastEl = $('toast'); let tId;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tId); tId = setTimeout(() => toastEl.classList.remove('show'), 2200); }
+
+  function render() {
+    const t = T[lang];
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => { const v = t[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    const radius = Number(store.get('sk-radius')) || 100;
+    document.querySelectorAll('[data-r]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.r) === radius)));
+
+    const user = store.get('sk-user');
+    $('who').textContent = user ? `+91 ••••• ${user.slice(-5)}` : t.guest;
+    $('who-sub').textContent = user ? t.userSub : t.guestSub;
+    $('auth').textContent = user ? t.logout : t.login;
+    $('auth').className = 'pill ' + (user ? 'line' : 'solid');
+    $('alerts').disabled = !user;
+    $('alerts-sub').textContent = user ? t.alertsIn : t.alertsOut;
+
+    const cost = SK.loadCost();
+    $('rate').value = cost.rate; $('load').value = cost.load; $('comm').value = cost.comm;
+    $('place').value = store.get('sk-place') || 'manapparai';
+    if (lastHealth) document.querySelector('[data-i18n="source"]').textContent = sourceText(lastHealth.dataState, lang);
+  }
+
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; store.set('sk-lang', lang); render(); }));
+  document.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { store.set('sk-radius', b.dataset.r); render(); toast(T[lang].saved); }));
+  $('place').addEventListener('change', () => { store.set('sk-place', $('place').value); toast(T[lang].saved); });
+
+  function saveCost() {
+    const prev = SK.loadCost();
+    const num = (id, min, max, d) => { const v = parseFloat($(id).value); return v >= min && v <= max ? v : d; };
+    SK.saveCost({ rate: num('rate', 0, 500, prev.rate), load: num('load', 10, 20000, prev.load), comm: num('comm', 0, 30, prev.comm) });
+    render(); toast(T[lang].saved);
+  }
+  ['rate', 'load', 'comm'].forEach(id => $(id).addEventListener('change', saveCost));
+  $('reset').addEventListener('click', () => { SK.saveCost(SK.DEFAULT_COST); render(); toast(T[lang].saved); });
+
+  $('auth').addEventListener('click', () => {
+    if (store.get('sk-user')) { store.del('sk-user'); render(); } else location.href = 'login.html';
+  });
+  $('alerts').addEventListener('change', () => { $('alerts').checked = false; toast(T[lang].soonAlerts); });
+
+  render();
+  SK.health().then(h => { lastHealth = h; render(); }).catch(() => {});
+</script>
+</body>
+</html>

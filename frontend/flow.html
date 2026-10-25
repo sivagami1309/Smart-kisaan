@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Kisaan – User flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --soil: #2e2016; --soil-2: #5c4a3a; --cream: #fbf6ec; --line: #e8dcc6; --paddy: #2f6b3a; --paddy-tint: #e6f0e2; --turmeric: #f0a91b; }
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: 'Catamaran', system-ui, sans-serif; background: var(--cream); color: var(--soil); }
+    header { max-width: 1440px; margin: 0 auto; padding: 40px 32px 8px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+    .eyebrow { font-size: 14px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--paddy); }
+    h1 { font-size: 44px; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; }
+    .lede { font-size: 18px; color: var(--soil-2); margin-top: 6px; max-width: 640px; }
+    .legend { display: flex; gap: 20px; font-size: 15px; font-weight: 700; color: var(--soil-2); flex-wrap: wrap; }
+    .legend span { display: inline-flex; align-items: center; gap: 8px; }
+    .legend i { width: 36px; height: 0; border-top: 3px solid var(--paddy); display: inline-block; }
+    .legend i.dash { border-top: 3px dashed #b39b7a; }
+
+    .board { position: relative; max-width: 1440px; margin: 0 auto; padding: 96px 32px 64px; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); row-gap: 72px; column-gap: 40px; position: relative; z-index: 1; }
+    .node { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .phone { width: 212px; height: 430px; border-radius: 30px; background: #1d150f; padding: 12px; box-shadow: 0 18px 40px rgba(46,32,22,.22); }
+    .screen { width: 188px; height: 406px; border-radius: 20px; overflow: hidden; background: #fff; position: relative; }
+    .screen iframe { width: 375px; height: 812px; border: 0; transform: scale(.5013); transform-origin: 0 0; pointer-events: none; }
+    .cap { text-align: center; max-width: 240px; }
+    .cap .n { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--paddy); color: #fff; font-weight: 800; font-size: 14px; margin-right: 6px; vertical-align: 2px; }
+    .cap b { font-size: 20px; font-weight: 800; }
+    .cap p { font-size: 15px; color: var(--soil-2); line-height: 1.4; margin-top: 2px; }
+    .cap a { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 800; color: var(--paddy); text-decoration: underline; text-underline-offset: 3px; }
+    .node.key .phone { box-shadow: 0 0 0 4px var(--turmeric), 0 18px 40px rgba(46,32,22,.22); }
+
+    #edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+    .elabel { position: absolute; z-index: 2; font-size: 13px; font-weight: 800; color: var(--soil); background: var(--cream); border: 2px solid var(--line); border-radius: 999px; padding: 2px 10px; white-space: nowrap; transform: translate(-50%, -50%); }
+
+    .notes { max-width: 1440px; margin: 0 auto; padding: 0 32px 56px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .notes div { background: #fffdf8; border: 2px solid var(--line); border-radius: 18px; padding: 18px 20px; }
+    .notes h3 { font-size: 18px; font-weight: 800; }
+    .notes p { font-size: 15px; color: var(--soil-2); line-height: 1.45; margin-top: 4px; }
+
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .notes { grid-template-columns: 1fr; }
+      #edges, .elabel { display: none; }
+      .board { padding-top: 24px; }
+    }
+    @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 34px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">Smart Kisaan · User flow</p>
+      <h1>Six screens, three taps to a decision</h1>
+      <p class="lede">Every phone below is the live screen, running on demo data. Green arrows are the main path; dashed arrows are the bottom-bar shortcuts.</p>
+    </div>
+    <div class="legend"><span><i></i>Main path</span><span><i class="dash"></i>Bottom bar / secondary</span></div>
+  </header>
+
+  <section class="board" id="board">
+    <svg id="edges" aria-hidden="true"></svg>
+    <div class="grid">
+      <div class="node" id="n-login" style="grid-column:1;grid-row:1">
+        <div class="phone"><div class="screen"><iframe src="login.html" title="Login screen" loading="lazy" tabindex="-1"></iframe></div></div>
+        <div class="cap"><span class="n">1</span><b>Login</b><p>Optional phone + OTP, only for alerts. Skip goes straight to prices.</p><a href="login.html">Open screen</a></div>
+      </div>
+      <div class="node" id="n-home" style="grid-column:2;grid-row:1">
+        <div class="phone"><div class="screen"><iframe src="home.html" title="Home screen" loading="lazy" tabindex="-1"></iframe></div></div>
+        <div class="cap"><span class="n">2</span><b>Home</b><p>Ask by voice in Tamil, or tap one of five crops.</p><a href="home.html">Open screen</a></div>
+      </div>
+      <div class="node key" id="n-results" style="grid-column:3;grid-row:1">
+        <div class="phone"><div class="screen"><iframe src="results.html?crop=tomato" title="Results screen" loading="lazy" tabindex="-1"></iframe></div></div>
+        <div class="cap"><span class="n">3</span><b>Results</b><p>Nearby mandis ranked by money in hand, each with its date. Tap a row for the sum.</p><a href="results.html?crop=tomato">Open screen</a></div>
+      </div>
+      <div class="node" id="n-offer" style="grid-column:4;grid-row:1">
+        <div class="phone"><div class="screen"><iframe src="offer.html?crop=tomato" title="Offer check screen" loading="lazy" tabindex="-1"></iframe></div></div>
+        <div class="cap"><span class="n">4</span><b>Offer check</b><p>Type the trader’s offer; see the gap and a line to show the trader.</p><a href="offer.html?crop=tomato">Open screen</a></div>
+      </div>
+      <div class="node" id="n-settings" style="grid-column:2;grid-row:2">
+        <div class="phone"><div class="screen"><iframe src="settings.html" title="Settings screen" loading="lazy" tabindex="-1"></iframe></div></div>
+        <div class="cap"><span class="n">5</span><b>Me (settings)</b><p>Language, village, distance and your real transport costs.</p><a href="settings.html">Open screen</a></div>
+      </div>
+      <div class="node" id="n-sms" style="grid-column:3;grid-row:2">
+        <div class="phone"><div class="screen"><iframe src="sms.html" title="Simulated SMS screen" loading="lazy" tabindex="-1"></iframe></div></div>
+        <div class="cap"><span class="n">6</span><b>SMS (simulated)</b><p>Basic phones send TOM, ONI… and get the top 3 mandis back.</p><a href="sms.html">Open screen</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div><h3>Login never blocks prices</h3><p>A phone number is asked for only for future price alerts (PRD: no login to view prices).</p></div>
+    <div><h3>Every price is dated</h3><p>Yesterday’s price is flagged; older prices are listed as “no report today”, never ranked and never ₹0.</p></div>
+    <div><h3>Costs flow everywhere</h3><p>Transport and commission set in “Me” or on the results screen change the ranking, the offer check and the SMS reply.</p></div>
+  </section>
+
+<script>
+  // Draw arrows between screens from their measured positions
+  const EDGES = [
+    ['n-login', 'n-home', 'right', 'skip / OTP', 'main'],
+    ['n-home', 'n-results', 'right', 'tap crop / voice', 'main'],
+    ['n-results', 'n-offer', 'right', 'offer check', 'main'],
+    ['n-home', 'n-settings', 'down', 'நான் · location', 'side'],
+    ['n-settings', 'n-sms', 'right', 'SMS மூலம் விலை', 'side'],
+    ['n-home', 'n-offer', 'arc', 'bottom bar', 'side'],
+  ];
+  const board = document.getElementById('board');
+  const svg = document.getElementById('edges');
+
+  function draw() {
+    board.querySelectorAll('.elabel').forEach(e => e.remove());
+    if (innerWidth <= 1000) { svg.innerHTML = ''; return; }
+    const b = board.getBoundingClientRect();
+    const box = id => { const r = document.querySelector('#' + id + ' .phone').getBoundingClientRect(); return { l: r.left - b.left, r: r.right - b.left, t: r.top - b.top, bt: r.bottom - b.top, cx: (r.left + r.right) / 2 - b.left, cy: (r.top + r.bottom) / 2 - b.top }; };
+    let out = `<defs>
+      <marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2f6b3a"/></marker>
+      <marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b39b7a"/></marker></defs>`;
+    EDGES.forEach(([a, z, how, label, kind]) => {
+      const A = box(a), Z = box(z);
+      let d, lx, ly;
+      if (how === 'right') { d = `M${A.r + 6} ${A.cy} L${Z.l - 8} ${Z.cy}`; lx = (A.r + Z.l) / 2; ly = A.cy - 22; }
+      if (how === 'down') { d = `M${A.cx} ${A.bt + 120} L${Z.cx} ${Z.t - 8}`; lx = A.cx; ly = (A.bt + 120 + Z.t) / 2; }
+      if (how === 'arc') { const y = A.t - 56; d = `M${A.cx} ${A.t - 6} C${A.cx} ${y - 20}, ${Z.cx} ${y - 20}, ${Z.cx} ${Z.t - 8}`; lx = (A.cx + Z.cx) / 2; ly = y - 14; }
+      const main = kind === 'main';
+      out += `<path d="${d}" fill="none" stroke="${main ? '#2f6b3a' : '#b39b7a'}" stroke-width="3" ${main ? '' : 'stroke-dasharray="8 7"'} marker-end="url(#${main ? 'am' : 'as'})"/>`;
+      const el = document.createElement('span'); el.className = 'elabel'; el.textContent = label;
+      el.style.left = lx + 'px'; el.style.top = ly + 'px'; board.appendChild(el);
+    });
+    svg.innerHTML = out;
+  }
+  addEventListener('resize', draw);
+  addEventListener('load', draw);
+  document.fonts && document.fonts.ready.then(draw);
+  draw();
+</script>
+</body>
+</html>

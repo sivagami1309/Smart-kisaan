@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Prices</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    main { flex: 1; padding: 4px 16px 120px; display: flex; flex-direction: column; gap: 18px; }
+
+    .head { display: flex; align-items: center; gap: 8px; padding: 12px 8px 0; }
+    .icon-btn { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; flex: none; }
+    .icon-btn:hover { background: var(--paddy-tint); }
+    .head h1 { white-space: nowrap; font-size: 22px; font-weight: 800; line-height: 1.15; flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .head h1 .ico { font-size: 28px; }
+
+    .filters { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .place { font-weight: 700; color: var(--soil-2); font-size: 16px; display: flex; align-items: center; gap: 6px; }
+    .seg { display: inline-flex; background: var(--card); border: 2px solid var(--line); border-radius: 999px; padding: 3px; }
+    .seg button { min-height: 40px; min-width: 52px; padding: 0 12px; border-radius: 999px; font-weight: 800; font-size: 15px; color: var(--soil-2); }
+    .seg .unit { align-self: center; padding: 0 10px 0 6px; font-weight: 700; font-size: 14px; color: var(--soil-2); }
+    .seg button[aria-pressed="true"] { background: var(--paddy); color: #fff; }
+
+    /* Best mandi */
+    .best {
+      background: var(--paddy); color: #fff; border-radius: 24px; padding: 20px; position: relative; overflow: hidden;
+      box-shadow: 0 6px 0 var(--paddy-deep);
+    }
+    .best::after { content: ""; position: absolute; right: -40px; top: -40px; width: 150px; height: 150px; border-radius: 50%; background: rgba(240,169,27,.22); }
+    .best .kicker { display: inline-flex; align-items: center; gap: 6px; background: var(--turmeric); color: var(--soil); font-weight: 800; font-size: 14px; padding: 4px 12px; border-radius: 999px; }
+    .best .name { font-size: 26px; font-weight: 800; line-height: 1.15; margin-top: 12px; }
+    .best .name small { display: block; font-size: 15px; font-weight: 600; opacity: .85; }
+    .best .price { display: flex; align-items: baseline; gap: 6px; margin-top: 10px; }
+    .best .price b { font-size: 52px; line-height: 1; font-weight: 800; letter-spacing: -0.02em; }
+    .best .price span { font-size: 18px; font-weight: 700; opacity: .9; }
+    .best .meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 15px; font-weight: 600; opacity: .92; }
+    .best .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; position: relative; z-index: 1; }
+    .best .actions a, .best .actions button {
+      min-height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-weight: 800; font-size: 16px; text-decoration: none; background: rgba(255,255,255,.14); color: #fff; border: 2px solid rgba(255,255,255,.35);
+    }
+
+    .insight {
+      display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 16px;
+      background: var(--card); border: 2px solid var(--line); font-size: 16px; line-height: 1.4;
+    }
+    .insight[hidden] { display: none; }
+    .insight .bulb { width: 34px; height: 34px; flex: none; border-radius: 10px; background: var(--turmeric-tint); display: grid; place-items: center; font-weight: 800; color: #9a6a00; }
+
+    .assume {
+      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+      padding: 12px 14px; border-radius: 14px; background: var(--turmeric-tint); border: 1.5px dashed var(--turmeric); font-size: 15px;
+    }
+    .assume b { font-weight: 800; }
+    .assume .edit { margin-left: auto; color: var(--paddy-deep); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+
+    .list-title { font-size: 17px; font-weight: 800; color: var(--soil-2); display: flex; align-items: center; gap: 12px; }
+    .list-title::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+
+    .rows { display: flex; flex-direction: column; gap: 10px; list-style: none; padding: 0; }
+    .row { background: var(--card); border: 2px solid var(--line); border-radius: 18px; overflow: hidden; }
+    .row > button { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; text-align: left; }
+    .rank { width: 34px; height: 34px; border-radius: 50%; background: var(--paddy-tint); color: var(--paddy-deep); display: grid; place-items: center; font-weight: 800; }
+    .mname { font-size: 19px; font-weight: 800; line-height: 1.2; }
+    .msub { font-size: 14px; color: var(--soil-2); font-weight: 600; display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px; }
+    .stale { white-space: nowrap; color: #9a4a00; background: #fde9c8; border-radius: 6px; padding: 0 6px; font-weight: 800; }
+    .net { text-align: right; }
+    .net b { display: block; font-size: 24px; font-weight: 800; line-height: 1.1; }
+    .net span { font-size: 13px; color: var(--soil-2); font-weight: 600; }
+    .row .more { display: none; padding: 0 14px 16px; border-top: 2px dashed var(--line); }
+    .row.open .more { display: block; }
+    .calc { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 16px; }
+    .calc td { padding: 4px 0; }
+    .calc td:last-child { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .calc tr.total td { border-top: 2px solid var(--soil); padding-top: 8px; font-weight: 800; font-size: 18px; }
+    .spark { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: 14px; color: var(--soil-2); font-weight: 700; }
+    .spark svg { flex: 1; height: 44px; }
+    .row-actions { display: flex; gap: 10px; margin-top: 12px; }
+    .row-actions a { flex: 1; min-height: 46px; border-radius: 12px; border: 2px solid var(--paddy); color: var(--paddy-deep); font-weight: 800; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 15px; }
+
+    .missing { background: transparent; border: 2px dashed var(--line); border-radius: 18px; padding: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .missing .tag { font-size: 14px; font-weight: 800; color: var(--soil-2); background: #efe6d6; border-radius: 8px; padding: 2px 8px; white-space: nowrap; }
+
+    .note { font-size: 14px; color: var(--soil-2); }
+
+    .dock {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; z-index: 10;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--cream) 70%, rgba(251,246,236,0));
+    }
+    .dock .btn { background: var(--turmeric); color: var(--soil); box-shadow: 0 4px 0 #c78a0c; }
+
+    /* Settings sheet */
+    .scrim { position: fixed; inset: 0; background: rgba(46,32,22,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 30; }
+    .sheet {
+      position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 100%); width: 100%; max-width: 430px; z-index: 31;
+      background: var(--card); border-radius: 24px 24px 0 0; padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+      transition: transform .25s ease; display: flex; flex-direction: column; gap: 14px;
+    }
+    .sheet.open { transform: translate(-50%, 0); }
+    .scrim.open { opacity: 1; pointer-events: auto; }
+    .grab { width: 44px; height: 5px; border-radius: 3px; background: var(--line); align-self: center; }
+    .sheet h2 { font-size: 22px; font-weight: 800; }
+    .field { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .field label { font-weight: 700; font-size: 17px; }
+    .field label small { display: block; font-weight: 600; font-size: 13px; color: var(--soil-2); }
+    .field input { width: 120px; height: 54px; border: 2px solid var(--line); border-radius: 14px; text-align: center; font-size: 22px; font-weight: 800; background: var(--cream); }
+    .field input:focus { border-color: var(--paddy); outline: none; background: #fff; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-banner" role="status">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z" fill="#2e2016"/><path d="M12 10v5M12 18v.5" stroke="#f0a91b" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <span data-sk-banner>DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு</span>
+  </div>
+
+  <header class="head">
+    <a class="icon-btn" href="home.html" aria-label="Back" data-i18n-label="back">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <h1><span class="ico" id="crop-ico" aria-hidden="true">🍅</span><span id="crop-title">தக்காளி விலை</span></h1>
+    <button class="icon-btn" id="speak" type="button" aria-label="Read aloud" data-i18n-label="speak">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z" fill="#2f6b3a"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="#2f6b3a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <div class="filters">
+      <span class="place">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" fill="#d4412c"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>
+        <span data-i18n="place">மணப்பாறை அருகில்</span>
+      </span>
+      <div class="seg" role="group" aria-label="Distance">
+        <button type="button" data-r="25" aria-pressed="false">25</button>
+        <button type="button" data-r="50" aria-pressed="false">50</button>
+        <button type="button" data-r="100" aria-pressed="true">100</button>
+        <span class="unit" data-i18n="kmUnit">கி.மீ</span>
+      </div>
+    </div>
+
+    <section class="best" id="best" aria-live="polite"></section>
+    <div class="insight" id="insight" hidden><span class="bulb" aria-hidden="true">!</span><span id="insight-text"></span></div>
+
+    <button class="assume" id="assume" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="13" height="9" rx="2" fill="#2e2016"/><path d="M15 10h4l3 3v3h-7z" fill="#2e2016"/><circle cx="7" cy="18" r="2" fill="#f0a91b" stroke="#2e2016" stroke-width="1.5"/><circle cx="18" cy="18" r="2" fill="#f0a91b" stroke="#2e2016" stroke-width="1.5"/></svg>
+      <span id="assume-text"></span>
+      <span class="edit" data-i18n="change">மாற்று</span>
+    </button>
+
+    <h2 class="list-title" data-i18n="allTitle">எல்லா சந்தைகளும் · கையில் கிடைப்பது</h2>
+    <ul class="rows" id="rows"></ul>
+
+    <div id="missing-wrap" hidden>
+      <h2 class="list-title" data-i18n="missingTitle">இன்று விலை வரவில்லை</h2>
+      <div id="missing" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"></div>
+    </div>
+
+    <p class="note" data-i18n="note">கையில் கிடைப்பது ஒரு மதிப்பீடு மட்டுமே. தரம், எடை, சந்தை நிலவரம் பொறுத்து உண்மை விலை மாறும்.</p>
+  </main>
+
+  <div class="dock">
+    <button class="btn" id="offer" type="button">
+      <span aria-hidden="true" style="font-size:22px">₹</span><span data-i18n="offer">வியாபாரி விலை சரியா?</span>
+    </button>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <span class="grab" aria-hidden="true"></span>
+    <h2 id="sheet-title" data-i18n="costTitle">உங்கள் செலவு</h2>
+    <div class="field"><label for="f-rate"><span data-i18n="rate">வண்டி வாடகை</span><small data-i18n="rateSub">₹ / கி.மீ</small></label><input id="f-rate" inputmode="decimal"></div>
+    <div class="field"><label for="f-load"><span data-i18n="load">சரக்கு அளவு</span><small data-i18n="loadSub">கிலோ</small></label><input id="f-load" inputmode="numeric"></div>
+    <div class="field"><label for="f-comm"><span data-i18n="comm">கமிஷன்</span><small>%</small></label><input id="f-comm" inputmode="decimal"></div>
+    <button class="btn btn-primary" id="save" type="button" data-i18n="save">சேமி</button>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const T = {
+    ta: {
+      demo: 'DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு', back: 'பின்செல்', speak: 'சத்தமாகப் படி',
+      title: c => `${c} விலை`, place: 'மணப்பாறை அருகில்', change: 'மாற்று',
+      best: 'கையில் அதிகம் கிடைக்கும்', perKg: '/ கிலோ', km: n => `${n} கி.மீ`, gross: v => `சந்தை விலை ₹${v}`,
+      dirs: 'வழி காட்டு', share: 'பகிர்', allTitle: 'எல்லா சந்தைகளும் · கையில் கிடைப்பது',
+      missingTitle: 'இன்று விலை வரவில்லை', noReport: 'இன்று விலை இல்லை',
+      last: (v, d) => `கடைசி விலை ₹${v}/கிலோ · ${d}`, never: 'பதிவு இல்லை',
+      stale: 'நேற்றைய விலை', assume: (r, l, c) => `மதிப்பீடு: <b>₹${r}/கி.மீ</b> · <b>${l} கிலோ</b> · கமிஷன் <b>${c}%</b>`,
+      insight: (m, g, k) => `${m}-இல் சந்தை விலை அதிகம் (₹${g}/கிலோ). ஆனால் ${k} கி.மீ பயணச் செலவால் கையில் குறைவாகவே கிடைக்கும்.`,
+      cModal: 'சந்தை விலை (மாடல்)', cTrans: 'வண்டி செலவு', cComm: 'கமிஷன்', cNet: 'கையில் கிடைப்பது',
+      trend: '7 நாள்', rising: 'ஏறுமுகம்', falling: 'இறங்குமுகம்', steady: 'நிலையாக',
+      empty: 'இந்த தூரத்தில் சந்தை இல்லை. தூரத்தை அதிகரியுங்கள்.',
+      note: 'கையில் கிடைப்பது ஒரு மதிப்பீடு மட்டுமே. தரம், எடை, சந்தை நிலவரம் பொறுத்து உண்மை விலை மாறும்.',
+      offer: 'வியாபாரி விலை சரியா?', kmUnit: 'கி.மீ', costTitle: 'உங்கள் செலவு', rate: 'வண்டி வாடகை', rateSub: '₹ / கி.மீ',
+      load: 'சரக்கு அளவு', loadSub: 'கிலோ', comm: 'கமிஷன்', save: 'சேமி', soon: 'விலை சரிபார்ப்பு திரை அடுத்து வடிவமைக்கப்படும்.',
+      say: (m, v) => `${m} சந்தையில் கிலோவுக்கு சுமார் ${v} ரூபாய் கையில் கிடைக்கும்.`,
+      shareText: (c, rows) => `${c} – கையில் கிடைக்கும் விலை (மாதிரி தரவு)\n` + rows,
+      months: ['ஜன', 'பிப்', 'மார்', 'ஏப்', 'மே', 'ஜூன்', 'ஜூலை', 'ஆக', 'செப்', 'அக்', 'நவ', 'டிச'],
+    },
+    en: {
+      demo: 'DEMO DATA – NOT LIVE MARKET PRICES', back: 'Back', speak: 'Read aloud',
+      title: c => `${c} prices`, place: 'Near Manapparai', change: 'Change',
+      best: 'Most money in hand', perKg: '/ kg', km: n => `${n} km`, gross: v => `Mandi price ₹${v}`,
+      dirs: 'Directions', share: 'Share', allTitle: 'All mandis · money in hand',
+      missingTitle: 'No price reported today', noReport: 'No report today',
+      last: (v, d) => `Last price ₹${v}/kg · ${d}`, never: 'No record',
+      stale: "Yesterday's price", assume: (r, l, c) => `Estimate: <b>₹${r}/km</b> · <b>${l} kg</b> · commission <b>${c}%</b>`,
+      insight: (m, g, k) => `${m} has the highest mandi price (₹${g}/kg), but the ${k} km trip leaves you less in hand.`,
+      cModal: 'Mandi price (modal)', cTrans: 'Transport', cComm: 'Commission', cNet: 'In your hand',
+      trend: '7 days', rising: 'Rising', falling: 'Falling', steady: 'Steady',
+      empty: 'No mandi in this distance. Increase the distance.',
+      note: 'Money in hand is only an estimate. The real price depends on quality, weight and the day’s market.',
+      offer: "Is the trader's price fair?", kmUnit: 'km', costTitle: 'Your costs', rate: 'Vehicle hire', rateSub: '₹ per km',
+      load: 'Load', loadSub: 'kg', comm: 'Commission', save: 'Save', soon: 'The offer check screen is designed next.',
+      say: (m, v) => `At ${m}, you get about ${v} rupees per kg in hand.`,
+      shareText: (c, rows) => `${c} – money in hand (demo data)\n` + rows,
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    },
+  };
+
+  Object.assign(T.ta, { offline: 'விலையைப் பெற முடியவில்லை. சர்வர் இயங்குகிறதா எனப் பாருங்கள்.', noTrend: 'போக்கு காட்ட போதிய தரவு இல்லை', loading: 'விலை ஏற்றப்படுகிறது…' });
+  Object.assign(T.en, { offline: "Couldn't load prices. Is the server running?", noTrend: 'Not enough history for a trend', loading: 'Loading prices…' });
+
+  const store = SK.store;
+  const lang = store.get('sk-lang') || 'ta';
+  const t = T[lang];
+  const cropKey = (() => { const k = new URLSearchParams(location.search).get('crop') || store.get('sk-crop') || 'tomato'; return SK.CROPS[k] ? k : 'tomato'; })();
+  const crop = SK.CROPS[cropKey];
+  let cost = SK.loadCost();
+  let radius = SK.radius();
+  let data = null;
+
+  const $ = id => document.getElementById(id);
+  const money = v => v.toFixed(2);
+  const day = d => SK.day(d, lang);
+  const name = m => lang === 'ta' ? m.ta : m.en;
+  const alt = m => lang === 'ta' ? m.en : m.ta;
+  const maps = m => `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lon}`;
+
+  function sparkSvg(points) {
+    if (points.length < 2) return `<span>${t.noTrend}</span>`;
+    const vals = points.map(p => p.modal), lo = Math.min(...vals), hi = Math.max(...vals);
+    const pts = vals.map((v, i) => `${(i * 200 / (vals.length - 1)).toFixed(1)},${(38 - (v - lo) / (hi - lo || 1) * 32).toFixed(1)}`).join(' ');
+    const dir = vals.at(-1) - vals.at(0), ref = vals.at(0);
+    const word = dir > ref * 0.03 ? t.rising : dir < -ref * 0.03 ? t.falling : t.steady;
+    return `<span>${t.trend}</span><svg viewBox="0 0 200 44" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="#2f6b3a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg><span>${word}</span>`;
+  }
+
+  function staticText() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => { const v = t[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
+    document.querySelectorAll('[data-i18n-label]').forEach(el => el.setAttribute('aria-label', t[el.dataset.i18nLabel]));
+    $('crop-ico').textContent = crop.ico;
+    $('crop-title').textContent = t.title(lang === 'ta' ? crop.ta : crop.en);
+    document.querySelectorAll('[data-r]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.r) === radius)));
+    $('assume-text').innerHTML = t.assume(cost.rate, cost.load, cost.comm);
+  }
+
+  async function load() {
+    staticText();
+    if (!data) $('best').innerHTML = `<p style="font-size:18px;font-weight:700">${t.loading}</p>`;
+    try {
+      data = await SK.prices(cropKey);
+    } catch {
+      data = null;
+      $('best').innerHTML = `<p style="font-size:18px;font-weight:700">${t.offline}</p>`;
+      $('rows').innerHTML = ''; $('insight').hidden = true; $('missing-wrap').hidden = true;
+      return;
+    }
+    SK.banner(data.dataState, lang);
+    draw();
+  }
+
+  function draw() {
+    const { ranked, missing } = data;
+    if (!ranked.length) {
+      $('best').innerHTML = `<p style="font-size:18px;font-weight:700">${t.empty}</p>`;
+      $('rows').innerHTML = ''; $('insight').hidden = true;
+    } else {
+      const top = ranked[0];
+      $('best').innerHTML = `
+        <span class="kicker">★ ${t.best}</span>
+        <div class="name">${name(top)}<small>${alt(top)}</small></div>
+        <div class="price"><b>₹${money(top.net)}</b><span>${t.perKg}</span></div>
+        <div class="meta"><span>${t.km(top.km)}</span><span>${day(top.date)}</span><span>${t.gross(money(top.modal))}</span></div>
+        <div class="actions">
+          <a href="${maps(top)}" target="_blank" rel="noopener">${t.dirs}</a>
+          <button type="button" id="share">${t.share}</button>
+        </div>`;
+      $('share').addEventListener('click', share);
+
+      // Explain when the highest mandi price is not the best in hand
+      const hg = ranked.find(r => r.mandi === data.highestGross);
+      $('insight').hidden = !hg;
+      if (hg) $('insight-text').textContent = t.insight(name(hg), money(hg.modal), hg.km);
+
+      $('rows').innerHTML = ranked.map((r, i) => `
+        <li class="row">
+          <button type="button" aria-expanded="false" data-mandi="${r.mandi}">
+            <span class="rank">${i + 1}</span>
+            <span><span class="mname">${name(r)}</span>
+              <span class="msub"><span>${t.km(r.km)}</span><span>${day(r.date)}</span>${r.freshness === 'stale' ? `<span class="stale">⚠ ${t.stale}</span>` : ''}</span></span>
+            <span class="net"><b>₹${money(r.net)}</b><span>${t.gross(money(r.modal))}</span></span>
+          </button>
+          <div class="more">
+            <table class="calc">
+              <tr><td>${t.cModal}</td><td>₹${money(r.modal)}</td></tr>
+              <tr><td>− ${t.cTrans} (₹${cost.rate} × ${r.km} ÷ ${cost.load})</td><td>₹${money(r.transport)}</td></tr>
+              <tr><td>− ${t.cComm} (${cost.comm}%)</td><td>₹${money(r.commission)}</td></tr>
+              <tr class="total"><td>${t.cNet}</td><td>₹${money(r.net)}</td></tr>
+            </table>
+            <div class="spark"></div>
+            <div class="row-actions"><a href="${maps(r)}" target="_blank" rel="noopener">${t.dirs}</a></div>
+          </div>
+        </li>`).join('');
+      $('rows').querySelectorAll('.row > button').forEach(b => b.addEventListener('click', () => {
+        const li = b.parentElement, open = !li.classList.contains('open');
+        li.classList.toggle('open', open); b.setAttribute('aria-expanded', String(open));
+        const spark = li.querySelector('.spark');
+        if (open && !spark.dataset.loaded) {
+          spark.dataset.loaded = '1';
+          SK.trend(cropKey, b.dataset.mandi, 7).then(p => { spark.innerHTML = sparkSvg(p.points); }).catch(() => { spark.dataset.loaded = ''; });
+        }
+      }));
+    }
+
+    $('missing-wrap').hidden = !missing.length;
+    $('missing').innerHTML = missing.map(m => `
+      <div class="missing">
+        <span><span class="mname">${name(m)}</span><span class="msub">${t.km(m.km)} · ${m.lastModal == null ? t.never : t.last(money(m.lastModal), day(m.lastDate))}</span></span>
+        <span class="tag">${t.noReport}</span>
+      </div>`).join('');
+  }
+
+  function share() {
+    const rows = data.ranked.slice(0, 3).map((r, i) => `${i + 1}. ${name(r)} – ₹${money(r.net)}/kg (${day(r.date)})`).join('\n');
+    window.open('https://wa.me/?text=' + encodeURIComponent(t.shareText(lang === 'ta' ? crop.ta : crop.en, rows)), '_blank', 'noopener');
+  }
+
+  document.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => { radius = Number(b.dataset.r); store.set('sk-radius', radius); load(); }));
+
+  $('offer').addEventListener('click', () => { location.href = 'offer.html?crop=' + cropKey; });
+
+  $('speak').addEventListener('click', () => {
+    const top = data?.ranked[0]; if (!top || !('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(t.say(name(top), Math.round(top.net)));
+    u.lang = lang === 'ta' ? 'ta-IN' : 'en-IN'; speechSynthesis.cancel(); speechSynthesis.speak(u);
+  });
+
+  // Cost settings sheet
+  const openSheet = o => { $('sheet').classList.toggle('open', o); $('scrim').classList.toggle('open', o); if (o) $('f-rate').focus(); };
+  $('assume').addEventListener('click', () => { $('f-rate').value = cost.rate; $('f-load').value = cost.load; $('f-comm').value = cost.comm; openSheet(true); });
+  $('scrim').addEventListener('click', () => openSheet(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') openSheet(false); });
+  $('save').addEventListener('click', () => {
+    const num = (id, min, max, d) => { const v = parseFloat($(id).value); return v >= min && v <= max ? v : d; };
+    cost = { rate: num('f-rate', 0, 500, cost.rate), load: num('f-load', 10, 20000, cost.load), comm: num('f-comm', 0, 30, cost.comm) };
+    SK.saveCost(cost); openSheet(false); load();
+  });
+
+  load();
+</script>
+</body>
+</html>

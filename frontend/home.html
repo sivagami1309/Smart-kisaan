@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    main { flex: 1; padding: 8px 16px 112px; display: flex; flex-direction: column; gap: 22px; }
+
+    .greet h1 { font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -0.01em; }
+    .greet p { color: var(--soil-2); font-size: 18px; margin-top: 4px; }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px 0 10px;
+      border: 2px solid var(--line); border-radius: 999px; background: var(--card); font-weight: 700; font-size: 16px; white-space: nowrap;
+      margin-top: 12px;
+    }
+    .chip .edit { color: var(--paddy-deep); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+
+    /* Voice: the primary action */
+    .voice {
+      display: flex; align-items: center; gap: 18px; width: 100%; text-align: left;
+      padding: 20px; border-radius: 24px; background: var(--paddy); color: #fff;
+      box-shadow: 0 6px 0 var(--paddy-deep);
+      transition: transform .08s ease;
+    }
+    .voice:active { transform: translateY(2px); box-shadow: 0 4px 0 var(--paddy-deep); }
+    .mic {
+      width: 76px; height: 76px; border-radius: 50%; flex: none; display: grid; place-items: center;
+      background: var(--turmeric); position: relative;
+    }
+    .mic::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 3px solid rgba(240,169,27,.45); }
+    .voice.listening .mic::after { animation: pulse 1.1s ease-out infinite; }
+    @keyframes pulse { from { transform: scale(.9); opacity: 1; } to { transform: scale(1.35); opacity: 0; } }
+    .voice .label strong { display: block; font-size: 24px; line-height: 1.2; font-weight: 800; }
+    .voice .label span { display: block; font-size: 17px; opacity: .9; margin-top: 4px; }
+
+    .section-title { font-size: 18px; font-weight: 800; color: var(--soil-2); display: flex; align-items: center; gap: 12px; }
+    .section-title::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+
+    .crops { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .crop {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0;
+      padding: 14px 12px; min-height: 132px; border-radius: var(--radius);
+      background: var(--card); border: 2px solid var(--line); text-align: left;
+      transition: border-color .15s ease, transform .08s ease;
+    }
+    .crop:hover { border-color: var(--paddy); }
+    .crop:active { transform: scale(.98); }
+    .crop .ico { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; font-size: 34px; line-height: 1; }
+    .crop .ta { font-size: 18px; font-weight: 800; line-height: 1.15; white-space: nowrap; letter-spacing: -0.01em; }
+    .crop.featured .ta { font-size: 24px; }
+    .crop .en { font-size: 14px; color: var(--soil-2); font-weight: 600; }
+    .crop.featured { position: relative; grid-column: 1 / -1; flex-direction: row; align-items: center; min-height: 104px; gap: 16px; border-color: var(--tomato); }
+    .crop.featured .ico { width: 68px; height: 68px; font-size: 42px; }
+    .crop.featured .tag { position: absolute; top: 10px; right: 10px; font-size: 12px; font-weight: 800; color: var(--tomato); background: #fbe5e1; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+
+    .offer {
+      display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+      padding: 18px; border-radius: var(--radius); background: var(--turmeric-tint); border: 2px solid #f3d38c;
+    }
+    .offer .badge { width: 52px; height: 52px; flex: none; border-radius: 14px; background: var(--turmeric); display: grid; place-items: center; font-size: 26px; font-weight: 800; color: var(--soil); }
+    .offer strong { display: block; font-size: 19px; line-height: 1.2; font-weight: 800; }
+    .offer span { display: block; font-size: 15px; color: var(--soil-2); margin-top: 2px; }
+    .offer .go { margin-left: auto; flex: none; }
+
+    .source { font-size: 14px; color: var(--soil-2); display: flex; gap: 8px; align-items: flex-start; }
+    .source .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--turmeric); flex: none; margin-top: 6px; }
+
+    /* Bottom navigation */
+    .nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      background: var(--card); border-top: 2px solid var(--line); padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      z-index: 10;
+    }
+    .nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 60px; justify-content: center; border-radius: 14px; color: var(--soil-2); text-decoration: none; font-size: 14px; font-weight: 700; }
+    .nav a[aria-current="page"] { color: var(--paddy-deep); background: var(--paddy-tint); }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-banner" role="status">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z" fill="#2e2016"/><path d="M12 10v5M12 18v.5" stroke="#f0a91b" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <span data-sk-banner>DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு</span>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#2f6b3a"/><path d="M20 31V18" stroke="#fbf6ec" stroke-width="3" stroke-linecap="round"/><path d="M20 20c0-6 4-10 10-10 0 6-4 10-10 10Z" fill="#f0a91b"/><path d="M20 23c0-5-3.5-8.5-9-8.5 0 5 3.5 8.5 9 8.5Z" fill="#fbf6ec"/></svg>
+      <span data-i18n="brand">ஸ்மார்ட் கிசான்</span>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="ta" aria-pressed="true">தமிழ்</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="greet">
+      <h1 id="hello">வணக்கம்!</h1>
+      <p data-i18n="ask">இன்று எந்தப் பயிரின் விலை வேண்டும்?</p>
+      <button class="chip" id="loc" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" fill="#d4412c"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>
+        <span data-i18n="loc">மணப்பாறை · 50 கி.மீ</span>
+        <span class="edit" data-i18n="edit">மாற்று</span>
+      </button>
+    </section>
+
+    <button class="voice" id="voice" type="button">
+      <span class="mic" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24"><rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="#2e2016"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" stroke="#2e2016" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      </span>
+      <span class="label">
+        <strong data-i18n="voice">குரலில் கேளுங்கள்</strong>
+        <span id="voice-sub" data-i18n="voiceSub">“தக்காளி விலை” என்று சொல்லுங்கள்</span>
+      </span>
+    </button>
+
+    <section aria-labelledby="crops-title">
+      <h2 class="section-title" id="crops-title" data-i18n="orTap">அல்லது பயிரைத் தொடுங்கள்</h2>
+      <div class="crops" style="margin-top:14px">
+        <button class="crop featured" data-crop="tomato" type="button">
+          <span class="ico" style="background:#fbe5e1">🍅</span>
+          <span><span class="ta" data-i18n="tomato">தக்காளி</span><br><span class="en" data-i18n="tomatoSub">Tomato</span></span>
+          <span class="tag" data-i18n="last">சமீபத்தில்</span>
+        </button>
+        <button class="crop" data-crop="onion" type="button">
+          <span class="ico" style="background:#f3e3ef">🧅</span>
+          <span><span class="ta" data-i18n="onion">வெங்காயம்</span><br><span class="en" data-i18n="onionSub">Onion</span></span>
+        </button>
+        <button class="crop" data-crop="paddy" type="button">
+          <span class="ico" style="background:#f6eccf">🌾</span>
+          <span><span class="ta" data-i18n="paddy">நெல்</span><br><span class="en" data-i18n="paddySub">Paddy</span></span>
+        </button>
+        <button class="crop" data-crop="banana" type="button">
+          <span class="ico" style="background:#fbf1c4">🍌</span>
+          <span><span class="ta" data-i18n="banana">வாழை</span><br><span class="en" data-i18n="bananaSub">Banana</span></span>
+        </button>
+        <button class="crop" data-crop="groundnut" type="button">
+          <span class="ico" style="background:#f1e4d4">🥜</span>
+          <span><span class="ta" data-i18n="groundnut">நிலக்கடலை</span><br><span class="en" data-i18n="groundnutSub">Groundnut</span></span>
+        </button>
+      </div>
+    </section>
+
+    <button class="offer" id="offer" type="button">
+      <span class="badge" aria-hidden="true">₹</span>
+      <span>
+        <strong data-i18n="offer">வியாபாரி சொன்ன விலை சரியா?</strong>
+        <span data-i18n="offerSub">சிறந்த சந்தை விலையுடன் ஒப்பிடுங்கள்</span>
+      </span>
+      <svg class="go" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <p class="source"><span class="dot" aria-hidden="true"></span><span data-i18n="source">விலை ஆதாரம்: Agmarknet (data.gov.in). நேரடி இணைப்பு இன்னும் சோதிக்கப்படவில்லை.</span></p>
+  </main>
+
+  <nav class="nav" aria-label="Main">
+    <a href="home.html" aria-current="page">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9Z" fill="currentColor"/></svg>
+      <span data-i18n="navHome">முகப்பு</span>
+    </a>
+    <a href="offer.html" id="nav-offer">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M9 8h6M9 11h6M13 11c0 2.5-1.6 3.5-4 3.5l4.5 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i18n="navOffer">விலை சரிபார்</span>
+    </a>
+    <a href="settings.html" id="nav-me">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>
+      <span data-i18n="navMe">நான்</span>
+    </a>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const T = {
+    ta: {
+      demo: 'DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு', brand: 'ஸ்மார்ட் கிசான்',
+      hello: 'வணக்கம்!', ask: 'இன்று எந்தப் பயிரின் விலை வேண்டும்?',
+      loc: 'மணப்பாறை · 50 கி.மீ', edit: 'மாற்று',
+      voice: 'குரலில் கேளுங்கள்', voiceSub: '“தக்காளி விலை” என்று சொல்லுங்கள்', listening: 'கேட்கிறது… பயிரின் பெயரைச் சொல்லுங்கள்',
+      noVoice: 'இந்த கைபேசியில் குரல் தேடல் இல்லை. பயிரைத் தொடுங்கள்.', notHeard: 'புரியவில்லை. மீண்டும் சொல்லுங்கள் அல்லது பயிரைத் தொடுங்கள்.',
+      orTap: 'அல்லது பயிரைத் தொடுங்கள்', last: 'சமீபத்தில்',
+      tomato: 'தக்காளி', onion: 'வெங்காயம்', paddy: 'நெல்', banana: 'வாழை', groundnut: 'நிலக்கடலை',
+      tomatoSub: 'Tomato', onionSub: 'Onion', paddySub: 'Paddy', bananaSub: 'Banana', groundnutSub: 'Groundnut',
+      offer: 'வியாபாரி சொன்ன விலை சரியா?', offerSub: 'சிறந்த சந்தை விலையுடன் ஒப்பிடுங்கள்',
+      source: 'விலை ஆதாரம்: Agmarknet (data.gov.in). நேரடி இணைப்பு இன்னும் சோதிக்கப்படவில்லை.',
+      navHome: 'முகப்பு', navOffer: 'விலை சரிபார்', navMe: 'நான்',
+      next: c => `அடுத்த திரை: ${c} – அருகிலுள்ள சந்தை விலை ஒப்பீடு (வடிவமைப்பில்)`,
+      soon: 'இந்தத் திரை அடுத்து வடிவமைக்கப்படும்.',
+    },
+    en: {
+      demo: 'DEMO DATA – NOT LIVE MARKET PRICES', brand: 'Smart Kisaan',
+      hello: 'Hello!', ask: 'Which crop price do you need today?',
+      loc: 'Manapparai · 50 km', edit: 'Change',
+      voice: 'Ask by voice', voiceSub: 'Say “tomato price”', listening: 'Listening… say the crop name',
+      noVoice: 'Voice search is not available on this phone. Tap your crop.', notHeard: "Didn't catch that. Try again or tap your crop.",
+      orTap: 'or tap your crop', last: 'Recent',
+      tomato: 'Tomato', onion: 'Onion', paddy: 'Paddy', banana: 'Banana', groundnut: 'Groundnut',
+      tomatoSub: 'தக்காளி', onionSub: 'வெங்காயம்', paddySub: 'நெல்', bananaSub: 'வாழை', groundnutSub: 'நிலக்கடலை',
+      offer: "Is the trader's price fair?", offerSub: 'Compare it with the best mandi price',
+      source: 'Price source: Agmarknet (data.gov.in). Live connection not yet tested.',
+      navHome: 'Home', navOffer: 'Offer check', navMe: 'Me',
+      next: c => `Next screen: ${c} – nearby mandi price comparison (in design)`,
+      soon: 'This screen is designed next.',
+    },
+  };
+
+  // Data source line follows the server's data state: live, cached (not live) or demo
+  let lastHealth = null;
+  function sourceText(ds, lang) {
+    const d = ds.asOf ? SK.day(ds.asOf, lang) : '';
+    if (ds.state === 'live') return lang === 'en' ? `Prices: Agmarknet (data.gov.in), updated ${d}.` : `விலை ஆதாரம்: Agmarknet (data.gov.in), ${d} புதுப்பிப்பு.`;
+    if (ds.state === 'cached') return lang === 'en' ? `Not live: showing the last prices, from ${d}.` : `நேரடி இல்லை: ${d} அன்றைய கடைசி விலை காட்டப்படுகிறது.`;
+    return lang === 'en' ? 'Prices: demo data. Agmarknet (data.gov.in) connects once an API key is added.' : 'விலை: மாதிரி தரவு. API key சேர்த்தவுடன் Agmarknet (data.gov.in) இணையும்.';
+  }
+
+  const store = {
+    get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  };
+  let lang = store.get('sk-lang') || 'ta';
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const v = T[lang][el.dataset.i18n];
+      if (typeof v === 'string') el.textContent = v;
+    });
+    document.getElementById('hello').textContent = T[lang].hello;
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    if (lastHealth) { SK.banner(lastHealth.dataState, lang); document.querySelector('[data-i18n="source"]').textContent = sourceText(lastHealth.dataState, lang); }
+  }
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; store.set('sk-lang', lang); applyLang(); }));
+
+  const toastEl = document.getElementById('toast');
+  let tId;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tId); tId = setTimeout(() => toastEl.classList.remove('show'), 2800); }
+
+  function openCrop(key) { store.set('sk-crop', key); location.href = 'results.html?crop=' + key; }
+  document.querySelectorAll('[data-crop]').forEach(b => b.addEventListener('click', () => openCrop(b.dataset.crop)));
+  document.getElementById('offer').addEventListener('click', () => { location.href = 'offer.html'; });
+  document.getElementById('loc').addEventListener('click', () => { location.href = 'settings.html#location'; });
+
+  // Tamil voice search (PRD FR13), falling back to the crop icons
+  const words = {
+    tomato: ['தக்காளி', 'tomato', 'thakkali'], onion: ['வெங்காயம்', 'onion', 'vengayam'],
+    paddy: ['நெல்', 'paddy', 'rice', 'nel'], banana: ['வாழை', 'banana', 'vazhai'],
+    groundnut: ['நிலக்கடலை', 'கடலை', 'groundnut', 'peanut'],
+  };
+  const voiceBtn = document.getElementById('voice');
+  const voiceSub = document.getElementById('voice-sub');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  voiceBtn.addEventListener('click', () => {
+    if (!SR) { toast(T[lang].noVoice); return; }
+    const rec = new SR();
+    rec.lang = lang === 'ta' ? 'ta-IN' : 'en-IN';
+    rec.onstart = () => { voiceBtn.classList.add('listening'); voiceSub.textContent = T[lang].listening; };
+    rec.onend = () => { voiceBtn.classList.remove('listening'); voiceSub.textContent = T[lang].voiceSub; };
+    rec.onerror = () => toast(T[lang].notHeard);
+    rec.onresult = e => {
+      const said = e.results[0][0].transcript.toLowerCase();
+      const hit = Object.keys(words).find(k => words[k].some(w => said.includes(w)));
+      hit ? openCrop(hit) : toast(T[lang].notHeard);
+    };
+    rec.start();
+  });
+
+  applyLang();
+  SK.health().then(h => { lastHealth = h; applyLang(); }).catch(() => {});
+</script>
+</body>
+</html>

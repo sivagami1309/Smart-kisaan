@@ -1,0 +1,99 @@
+/* Smart Kisaan – shared design tokens and components.
+   Built for outdoor use at dawn: high contrast, large type, warm earth palette. */
+:root {
+  --soil: #2e2016;
+  --soil-2: #5c4a3a;
+  --cream: #fbf6ec;
+  --card: #ffffff;
+  --line: #e8dcc6;
+  --paddy: #2f6b3a;
+  --paddy-deep: #1f4d29;
+  --paddy-tint: #e6f0e2;
+  --turmeric: #f0a91b;
+  --turmeric-tint: #fdf0d2;
+  --tomato: #d4412c;
+  --radius: 20px;
+  --tap: 56px;
+  --font: 'Catamaran', 'Noto Sans Tamil', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+html, body { background: var(--cream); color: var(--soil); }
+
+body {
+  font-family: var(--font);
+  font-size: 18px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+}
+
+/* Phone-width column, centred on larger screens */
+.app {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; }
+
+:focus-visible { outline: 3px solid var(--turmeric); outline-offset: 3px; border-radius: 12px; }
+
+/* Top bar */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 0;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -0.01em; white-space: nowrap; }
+.brand-mark { width: 40px; height: 40px; flex: none; }
+
+.lang {
+  display: inline-flex; border: 2px solid var(--line); border-radius: 999px; padding: 3px; background: var(--card);
+}
+.lang button {
+  min-height: 36px; padding: 0 14px; border-radius: 999px; font-weight: 700; font-size: 15px; color: var(--soil-2);
+}
+.lang button[aria-pressed="true"] { background: var(--soil); color: var(--cream); }
+
+/* Buttons */
+.btn {
+  min-height: var(--tap); width: 100%;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  border-radius: 16px; font-weight: 800; font-size: 20px; line-height: 1.2; padding: 10px 20px; text-align: center;
+  transition: transform .08s ease, background .15s ease;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--paddy); color: #fff; box-shadow: 0 4px 0 var(--paddy-deep); }
+.btn-primary:disabled { background: #a9bfa9; box-shadow: none; cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--paddy-deep); border: 2px solid var(--paddy); }
+
+/* Demo data banner – required on any screen with synthetic data (PRD FR10) */
+.demo-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; font-size: 13px; font-weight: 800; letter-spacing: .02em;
+  color: var(--soil);
+  background: repeating-linear-gradient(-45deg, var(--turmeric-tint) 0 12px, #fbe6b4 12px 24px);
+  border-bottom: 2px solid var(--turmeric);
+}
+
+.toast {
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%) translateY(20px);
+  max-width: 398px; width: calc(100% - 32px);
+  background: var(--soil); color: var(--cream); padding: 14px 18px; border-radius: 14px;
+  font-weight: 600; font-size: 16px; opacity: 0; pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease; z-index: 20;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.demo-banner.live { background: var(--paddy-tint); border-bottom-color: var(--paddy); color: var(--paddy-deep); }
+.demo-banner.cached { background: var(--turmeric-tint); }

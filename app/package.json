@@ -1,0 +1,14 @@
+{
+  "name": "smart-kisaan",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Smart Kisaan prototype: nearby mandi prices ranked by money in hand",
+  "type": "module",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "test": "node --test --disable-warning=ExperimentalWarning \"test/*.test.js\"",
+    "seed": "node --disable-warning=ExperimentalWarning src/seed.js",
+    "ingest": "node --disable-warning=ExperimentalWarning src/ingest.js",
+    "start": "node --disable-warning=ExperimentalWarning src/server.js"
+  }
+}
