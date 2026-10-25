@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <meta name="robots" content="noindex">
+  <title>Smart Kisaan – Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .app { max-width: 760px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+    .kpis div { background: var(--cream); border-radius: 14px; padding: 10px 12px; }
+    .kpis small { display: block; font-size: 12px; font-weight: 800; color: var(--soil-2); }
+    .kpis b { font-size: 24px; font-weight: 800; }
+    .tbl-wrap { overflow-x: auto; }
+    table.tbl { width: 100%; border-collapse: collapse; font-size: 15px; }
+    .tbl th { text-align: left; font-size: 12px; color: var(--soil-2); font-weight: 800; padding: 6px 6px; white-space: nowrap; }
+    .tbl td { padding: 8px 6px; border-top: 2px solid #f1e8d8; vertical-align: top; }
+    .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="head">
+    <a class="icon-btn" href="settings.html" aria-label="Back"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1>Admin · நிர்வாகம்</h1>
+  </header>
+  <main class="page">
+    <form class="card" id="login">
+      <h2>Admin password</h2>
+      <p class="meta">Set <code>SK_ADMIN_TOKEN</code> in <code>project/app/.env</code> and restart the server. It is kept only for this browser tab.</p>
+      <label class="f"><span>Password</span><input id="token" type="password" autocomplete="current-password"></label>
+      <button class="btn btn-primary" type="submit">Open admin</button>
+      <p class="note" id="loginErr" role="alert"></p>
+    </form>
+
+    <div id="console" hidden style="display:flex;flex-direction:column;gap:16px">
+      <section class="card">
+        <h2>Data</h2>
+        <p class="meta" id="state"></p>
+        <div class="kpis" id="kpis"></div>
+      </section>
+
+      <form class="card" id="priceForm">
+        <h2>Add a price seen at a mandi</h2>
+        <p class="meta">For a price read from the market committee board or a receipt. Stored as real data, marked “entered by admin”, never overwriting a stored price.</p>
+        <p class="meta"><b>Note:</b> once any real price is stored, every screen switches from demo prices to real prices only, so mandis without a real price show “no report”.</p>
+        <div class="row2">
+          <label class="f"><span>Date</span><input id="pDate" type="date"></label>
+          <label class="f"><span>Mandi</span><select id="pMandi"><option value="trichy">Trichy</option><option value="manapparai">Manapparai</option><option value="dindigul">Dindigul</option><option value="oddanchatram">Oddanchatram</option><option value="karur">Karur</option></select></label>
+        </div>
+        <label class="f"><span>Crop</span><select id="pCrop"><option value="tomato">Tomato</option><option value="onion">Onion</option><option value="paddy">Paddy</option><option value="banana">Banana</option><option value="groundnut">Groundnut</option></select></label>
+        <div class="row3">
+          <label class="f"><span>Min ₹/kg</span><input id="pMin" inputmode="decimal"></label>
+          <label class="f"><span>Modal ₹/kg</span><input id="pModal" inputmode="decimal"></label>
+          <label class="f"><span>Max ₹/kg</span><input id="pMax" inputmode="decimal"></label>
+        </div>
+        <button class="btn btn-primary" type="submit">Save price</button>
+        <p class="note" id="priceMsg" role="status"></p>
+      </form>
+
+      <section class="card"><h2>Data source runs</h2><div class="tbl-wrap"><table class="tbl" id="runs"></table></div></section>
+      <section class="card"><h2>Farmers</h2><div class="tbl-wrap"><table class="tbl" id="farmers"></table></div></section>
+      <section class="card"><h2>Shared sales</h2><div class="tbl-wrap"><table class="tbl" id="pools"></table></div></section>
+      <button class="btn btn-ghost" id="logout" type="button">Lock admin</button>
+    </div>
+  </main>
+</div>
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const esc = UI.esc;
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+  $('pDate').value = today; $('pDate').max = today;
+  const row = (cells, head) => `<tr>${cells.map(c => head ? `<th>${c}</th>` : `<td>${c}</td>`).join('')}</tr>`;
+
+  async function open() {
+    let s;
+    try { s = await SK.admin.get('summary'); }
+    catch (e) {
+      $('login').hidden = false; $('console').hidden = true;
+      $('loginErr').textContent = e.code === 'admin_disabled' ? 'Admin is switched off: set SK_ADMIN_TOKEN in .env and restart.' : e.status === 401 ? 'Wrong password.' : UI.errText(e);
+      return;
+    }
+    $('login').hidden = true; $('console').hidden = false;
+    const ds = s.dataState;
+    $('state').textContent = `Prices: ${ds.state.toUpperCase()} (${ds.source}), latest ${ds.asOf ?? '—'} · today ${s.today}`;
+    const pools = Object.entries(s.counts.pools).map(([k, v]) => `${k.toLowerCase()} ${v}`).join(', ') || 'none';
+    $('kpis').innerHTML = [['Farmers', s.counts.farmers], ['Listings', s.counts.listings], ['Sales', s.counts.sales], ['Price rows', s.counts.prices]]
+      .map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('') + `<div style="grid-column:1/-1"><small>Shared sales</small><b style="font-size:16px">${esc(pools)}</b></div>`;
+    $('runs').innerHTML = row(['When', 'Source', 'Result', 'Rows', 'Message'], true) + (s.ingestion.length
+      ? s.ingestion.map(r => row([esc(UI.time(r.at)), esc(r.source), r.ok ? '✔ ok' : '✖ failed', r.inserted, esc(r.message)])).join('')
+      : row(['—', '', 'No runs yet', '', 'Add DATA_GOV_IN_API_KEY to .env to import Agmarknet prices']));
+    const f = (await SK.admin.get('farmers')).farmers;
+    $('farmers').innerHTML = row(['Name', 'Listings', 'Sales', 'Last seen'], true) + (f.length ? f.map(x => row([esc(x.name ?? '(no name)'), x.listings, x.sales, x.lastSeen ? esc(UI.time(x.lastSeen)) : '—'])).join('') : row(['No farmers yet', '', '', '']));
+    const p = (await SK.admin.get('pools')).pools;
+    $('pools').innerHTML = row(['Crop', 'Mandi', 'State', 'kg', 'Saving', 'Farmers'], true) + (p.length ? p.map(x => row([esc(x.crop), esc(x.mandi), esc(x.state), x.totalKg, `₹${UI.rs(x.saving)}`, esc(x.names.join(', '))])).join('') : row(['No shared sales yet', '', '', '', '', '']));
+  }
+
+  $('login').addEventListener('submit', e => { e.preventDefault(); SK.adminToken.set($('token').value); $('loginErr').textContent = ''; open(); });
+  $('logout').addEventListener('click', () => { SK.adminToken.set(''); location.reload(); });
+  $('priceForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('priceMsg').textContent = '';
+    try {
+      await SK.admin.price({ date: $('pDate').value, mandi: $('pMandi').value, crop: $('pCrop').value, minPerKg: $('pMin').value, modalPerKg: $('pModal').value, maxPerKg: $('pMax').value });
+      $('priceMsg').textContent = '✔ Saved. It now counts as real data on every screen.';
+      open();
+    } catch (err) { $('priceMsg').textContent = '✖ ' + UI.errText(err); }
+  });
+
+  if (SK.adminToken.get()) open();
+</script>
+</body>
+</html>

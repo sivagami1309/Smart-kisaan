@@ -12,19 +12,38 @@ export function openDb(path = ':memory:') {
     );
     CREATE TABLE IF NOT EXISTS ingestion_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, source TEXT, ok INTEGER, inserted INTEGER, message TEXT
+    );
+    CREATE TABLE IF NOT EXISTS listings (
+      id TEXT PRIMARY KEY, farmer TEXT NOT NULL, name TEXT, crop TEXT NOT NULL, qty_kg REAL NOT NULL,
+      place TEXT, lat REAL NOT NULL, lon REAL NOT NULL, mandi TEXT NOT NULL, km_to_mandi REAL NOT NULL,
+      willing INTEGER NOT NULL, status TEXT NOT NULL, demo INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS pools (
+      id TEXT PRIMARY KEY, data TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sales (
+      id TEXT PRIMARY KEY, farmer TEXT NOT NULL, crop TEXT NOT NULL, mandi TEXT NOT NULL, qty_kg REAL NOT NULL,
+      price_per_kg REAL NOT NULL, sold_on TEXT NOT NULL, buyer TEXT, receipt TEXT, transport REAL NOT NULL,
+      commission_pct REAL NOT NULL, loading REAL NOT NULL, other REAL NOT NULL, pool_id TEXT, created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, farmer TEXT NOT NULL, kind TEXT NOT NULL, pool_id TEXT,
+      actor_name TEXT, created_at TEXT NOT NULL, read INTEGER NOT NULL DEFAULT 0
     );`);
+  // Where each price came from (demo / agmarknet / manual). Older databases get the column added.
+  try { db.exec('ALTER TABLE price_daily ADD COLUMN origin TEXT'); } catch { /* already there */ }
   return db;
 }
 
 const plain = r => ({ ...r });
 
-export function insertRows(db, rows, source, fetchedAt) {
+export function insertRows(db, rows, source, fetchedAt, origin = source === 'demo' ? 'demo' : 'agmarknet') {
   const stmt = db.prepare(`INSERT OR IGNORE INTO price_daily
-    (date, mandi, crop, min_q, max_q, modal_q, source, fetched_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+    (date, mandi, crop, min_q, max_q, modal_q, source, fetched_at, origin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
   let inserted = 0;
   db.exec('BEGIN');
   try {
-    for (const r of rows) inserted += Number(stmt.run(r.date, r.mandi, r.crop, r.minQ ?? null, r.maxQ ?? null, r.modalQ, source, fetchedAt).changes);
+    for (const r of rows) inserted += Number(stmt.run(r.date, r.mandi, r.crop, r.minQ ?? null, r.maxQ ?? null, r.modalQ, source, fetchedAt, origin).changes);
     db.exec('COMMIT');
   } catch (e) {
     db.exec('ROLLBACK');
@@ -35,7 +54,8 @@ export function insertRows(db, rows, source, fetchedAt) {
 
 export function latestByMandi(db, crop, source) {
   return db.prepare(`
-    SELECT p.mandi, p.date, p.min_q AS minQ, p.max_q AS maxQ, p.modal_q AS modalQ
+    SELECT p.mandi, p.date, p.min_q AS minQ, p.max_q AS maxQ, p.modal_q AS modalQ, p.fetched_at AS fetchedAt,
+      COALESCE(p.origin, CASE p.source WHEN 'demo' THEN 'demo' ELSE 'agmarknet' END) AS origin
     FROM price_daily p
     JOIN (SELECT mandi, MAX(date) AS d FROM price_daily WHERE crop = ? AND source = ? GROUP BY mandi) l
       ON p.mandi = l.mandi AND p.date = l.d
@@ -58,6 +78,14 @@ export function trend(db, crop, mandi, source, days, today) {
   return db.prepare(`SELECT date, modal_q AS modalQ FROM price_daily
     WHERE crop = ? AND mandi = ? AND source = ? AND date BETWEEN ? AND ? ORDER BY date`)
     .all(crop, mandi, source, shift(today, -(days - 1)), today).map(plain);
+}
+
+// One mandi's modal price for a crop on a date, real data preferred over demo; null if none
+export function priceOn(db, crop, mandi, date) {
+  const r = db.prepare(`SELECT modal_q AS modalQ, source,
+      COALESCE(origin, CASE source WHEN 'demo' THEN 'demo' ELSE 'agmarknet' END) AS origin
+    FROM price_daily WHERE crop = ? AND mandi = ? AND date = ? ORDER BY source = 'live' DESC LIMIT 1`).get(crop, mandi, date);
+  return r ? { ...r } : null;
 }
 
 export function logIngestion(db, { at, source, ok, inserted, message }) {

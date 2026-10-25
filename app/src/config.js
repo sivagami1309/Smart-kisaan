@@ -5,11 +5,11 @@
 export const STATE = 'Tamil Nadu';
 
 export const CROPS = {
-  tomato: { ta: 'தக்காளி', en: 'Tomato', ico: '🍅', code: 'TOM', feed: 'Tomato' },
-  onion: { ta: 'வெங்காயம்', en: 'Onion', ico: '🧅', code: 'ONI', feed: 'Onion' },
-  paddy: { ta: 'நெல்', en: 'Paddy', ico: '🌾', code: 'PAD', feed: 'Paddy(Dhan)(Common)' },
-  banana: { ta: 'வாழை', en: 'Banana', ico: '🍌', code: 'BAN', feed: 'Banana' },
-  groundnut: { ta: 'நிலக்கடலை', en: 'Groundnut', ico: '🥜', code: 'GNT', feed: 'Groundnut' },
+  tomato: { ta: 'தக்காளி', en: 'Tomato', ico: '🍅', code: 'TOM', keyword: 'tomato' },
+  onion: { ta: 'வெங்காயம்', en: 'Onion', ico: '🧅', code: 'ONI', keyword: 'onion' },
+  paddy: { ta: 'நெல்', en: 'Paddy', ico: '🌾', code: 'PAD', keyword: 'paddy' },
+  banana: { ta: 'வாழை', en: 'Banana', ico: '🍌', code: 'BAN', keyword: 'banana' },
+  groundnut: { ta: 'நிலக்கடலை', en: 'Groundnut', ico: '🥜', code: 'GNT', keyword: 'groundnut' },
 };
 
 export const MANDIS = {

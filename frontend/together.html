@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Sell together</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    main { flex: 1; padding: 4px 16px 112px; display: flex; flex-direction: column; gap: 18px; }
+    .head { display: flex; align-items: center; gap: 8px; padding: 12px 8px 0; }
+    .icon-btn { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; flex: none; }
+    .head h1 { font-size: 22px; font-weight: 800; line-height: 1.2; }
+    .lead { color: var(--soil-2); font-size: 16px; }
+
+    .card { background: var(--card); border: 2px solid var(--line); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .card h2 { font-size: 18px; font-weight: 800; }
+    .row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+    label.f { display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 15px; min-width: 0; }
+    .f input, .f select { width: 100%; min-width: 0; height: 52px; border: 2px solid var(--line); border-radius: 14px; background: var(--cream); padding: 0 12px; font: inherit; font-weight: 800; font-size: 18px; }
+    .f input:focus, .f select:focus { outline: none; border-color: var(--paddy); background: #fff; }
+    .chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chips button { flex: none; min-height: 46px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--line); background: var(--card); font-weight: 800; font-size: 16px; }
+    .chips button[aria-pressed="true"] { border-color: var(--paddy); background: var(--paddy-tint); color: var(--paddy-deep); }
+    .check { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; min-height: 44px; }
+    .check input { width: 24px; height: 24px; accent-color: var(--paddy); }
+
+    .mine { display: flex; align-items: center; gap: 12px; }
+    .mine .ico { width: 52px; height: 52px; border-radius: 14px; background: #fbe5e1; display: grid; place-items: center; font-size: 30px; flex: none; }
+    .mine b { display: block; font-size: 19px; font-weight: 800; }
+    .mine span { font-size: 14px; color: var(--soil-2); font-weight: 600; }
+    .pill { font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: var(--paddy-tint); color: var(--paddy-deep); white-space: nowrap; margin-left: auto; }
+    .linkish { color: var(--paddy-deep); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; font-size: 15px; min-height: 40px; text-align: left; }
+
+    .match { border: 2px solid var(--line); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--card); }
+    .match .who { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+    .match .who b { font-size: 18px; font-weight: 800; }
+    .match .who span { font-size: 14px; color: var(--soil-2); font-weight: 700; white-space: nowrap; }
+    .save { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+    .save div { background: var(--paddy-tint); border-radius: 12px; padding: 8px 10px; }
+    .save div:last-child { background: var(--cream); }
+    .save small { display: block; font-size: 12px; font-weight: 800; color: var(--soil-2); }
+    .save strong { font-size: 22px; font-weight: 800; color: var(--paddy-deep); }
+    .save div:last-child strong { color: var(--soil); font-size: 18px; }
+    .meta { font-size: 14px; color: var(--soil-2); }
+    .empty { font-size: 16px; color: var(--soil-2); background: var(--cream); border: 2px dashed var(--line); border-radius: 16px; padding: 14px; }
+
+    /* Pool view */
+    .steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+    .steps span { height: 8px; border-radius: 4px; background: var(--line); }
+    .steps span.on { background: var(--paddy); }
+    .state { font-size: 22px; font-weight: 800; }
+    .state.cancel { color: var(--tomato); }
+    .people { display: flex; flex-direction: column; gap: 8px; }
+    .person { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 700; }
+    .person .ok { color: var(--paddy-deep); font-weight: 800; white-space: nowrap; }
+    .person .wait { color: #9a6a00; font-weight: 800; white-space: nowrap; }
+    .split-wrap { overflow-x: auto; margin: 0 -4px; }
+    table.split { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .split th { text-align: right; font-size: 12px; color: var(--soil-2); font-weight: 800; padding: 4px 3px 6px; }
+    .split th:first-child, .split td:first-child { text-align: left; }
+    .split td { text-align: right; padding: 8px 3px; border-top: 2px solid #f1e8d8; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+    .split td:first-child { white-space: normal; overflow-wrap: anywhere; }
+    .split td.gain { color: var(--paddy-deep); font-weight: 800; }
+    .total { font-size: 15px; font-weight: 700; background: var(--paddy-tint); border-radius: 12px; padding: 10px 12px; }
+    .actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-demo { background: var(--turmeric-tint); border: 2px dashed var(--turmeric); color: var(--soil); }
+    .btn-line { border: 2px solid var(--tomato); color: var(--tomato); background: transparent; }
+    .sale { display: flex; gap: 10px; align-items: flex-end; }
+    .sale .f { flex: 1; }
+    .sale .btn { width: auto; flex: none; }
+    ol.timeline { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--soil-2); }
+    ol.timeline b { color: var(--soil); }
+    .note { font-size: 13px; color: var(--soil-2); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="demo-banner" role="status">
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z" fill="#2e2016"/><path d="M12 10v5M12 18v.5" stroke="#f0a91b" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <span data-sk-banner>DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு</span>
+  </div>
+
+  <header class="head">
+    <a class="icon-btn" id="back" href="home.html" aria-label="Back">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <h1 data-i18n="title">சேர்ந்து விற்போம்</h1>
+  </header>
+
+  <main>
+    <!-- List view -->
+    <section id="list-view">
+      <p class="lead" data-i18n="lead">அருகிலுள்ள விவசாயியுடன் ஒரே வண்டியில் சந்தைக்கு அனுப்பி, வண்டிச் செலவைப் பகிருங்கள்.</p>
+
+      <form class="card" id="form" style="margin-top:16px">
+        <h2 data-i18n="formTitle">என் விளைச்சல்</h2>
+        <div class="chips" id="crops" role="group" aria-label="Crop"></div>
+        <div class="row2">
+          <label class="f"><span data-i18n="qty">எவ்வளவு கிலோ?</span><input id="qty" inputmode="numeric" placeholder="300" autocomplete="off"></label>
+          <label class="f"><span data-i18n="mandi">எந்த சந்தை?</span>
+            <select id="mandi">
+              <option value="trichy">திருச்சி</option>
+              <option value="manapparai">மணப்பாறை</option>
+              <option value="dindigul">திண்டுக்கல்</option>
+              <option value="oddanchatram">ஒட்டன்சத்திரம்</option>
+              <option value="karur">கரூர்</option>
+            </select>
+          </label>
+        </div>
+        <label class="f"><span data-i18n="name">உங்கள் பெயர் (மற்றவருக்குக் காட்டப்படும்)</span><input id="name" maxlength="40" autocomplete="given-name"></label>
+        <label class="check"><input type="checkbox" id="willing" checked><span data-i18n="willing">மற்றவருடன் சேர்ந்து அனுப்ப சம்மதம்</span></label>
+        <button class="btn btn-primary" type="submit" data-i18n="save">பதிவு செய்து அருகிலுள்ளவர்களைத் தேடு</button>
+        <p class="note" id="form-error" role="alert"></p>
+      </form>
+
+      <div id="mine-wrap" class="card" hidden style="margin-top:16px">
+        <div class="mine"><span class="ico" id="mine-ico" aria-hidden="true">🍅</span><span><b id="mine-title"></b><span id="mine-sub"></span></span><span class="pill" id="mine-status"></span></div>
+        <button class="linkish" type="button" id="new" data-i18n="newListing">புதிய விளைச்சல் சேர்</button>
+      </div>
+
+      <div id="matches-wrap" hidden style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+        <h2 style="font-size:18px;font-weight:800" data-i18n="matchesTitle">அருகில் சேர்ந்து அனுப்பலாம்</h2>
+        <div id="matches" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+
+      <div id="pools-wrap" hidden style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+        <h2 style="font-size:18px;font-weight:800" data-i18n="poolsTitle">என் கூட்டு விற்பனைகள்</h2>
+        <div id="pools" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </section>
+
+    <!-- Pool view -->
+    <section id="pool-view" hidden style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="steps" id="steps" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="state" id="state"></div>
+        <p class="meta" id="pool-meta"></p>
+        <div class="people" id="people"></div>
+      </div>
+      <div class="card">
+        <h2 data-i18n="splitTitle">செலவுப் பகிர்வு</h2>
+        <p class="meta" id="trip"></p>
+        <div class="split-wrap"><table class="split" id="split"></table></div>
+        <p class="total" id="saving"></p>
+        <p class="note" data-i18n="splitNote">வண்டிச் செலவு கிலோ விகிதப்படி பகிரப்படுகிறது. எண்கள் மதிப்பீடுகள்.</p>
+      </div>
+      <div class="card">
+        <div class="actions" id="actions"></div>
+        <p class="note" id="action-error" role="alert"></p>
+      </div>
+      <div class="card">
+        <h2 data-i18n="historyTitle">நடந்தவை</h2>
+        <ol class="timeline" id="timeline"></ol>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const T = {
+    ta: {
+      title: 'சேர்ந்து விற்போம்', lead: 'அருகிலுள்ள விவசாயியுடன் ஒரே வண்டியில் சந்தைக்கு அனுப்பி, வண்டிச் செலவைப் பகிருங்கள்.',
+      formTitle: 'என் விளைச்சல்', qty: 'எவ்வளவு கிலோ?', mandi: 'எந்த சந்தை?', name: 'உங்கள் பெயர் (மற்றவருக்குக் காட்டப்படும்)',
+      willing: 'மற்றவருடன் சேர்ந்து அனுப்ப சம்மதம்', save: 'பதிவு செய்து அருகிலுள்ளவர்களைத் தேடு', newListing: 'புதிய விளைச்சல் சேர்',
+      matchesTitle: 'அருகில் சேர்ந்து அனுப்பலாம்', poolsTitle: 'என் கூட்டு விற்பனைகள்', splitTitle: 'செலவுப் பகிர்வு',
+      splitNote: 'வண்டிச் செலவு கிலோ விகிதப்படி பகிரப்படுகிறது. எண்கள் மதிப்பீடுகள்.', historyTitle: 'நடந்தவை',
+      kg: n => `${n} கிலோ`, km: n => `${n} கி.மீ`, to: m => `${m} சந்தைக்கு`,
+      status: { open: 'தேடலில்', pooled: 'கூட்டில்', sold: 'விற்றது' },
+      noMatch: 'இப்போது அருகில் பொருத்தமானவர் இல்லை. உங்கள் பதிவு மற்றவர்களுக்குத் தெரியும்.',
+      notWilling: 'சேர்ந்து அனுப்ப சம்மதம் கொடுத்தால் மட்டுமே பொருத்தம் தேடப்படும்.',
+      youSave: 'உங்களுக்கு மிச்சம்', theySave: 'அவருக்கு மிச்சம்', propose: 'சேர்ந்து அனுப்பக் கேள்', away: n => `${n} கி.மீ தூரம்`,
+      vehicleTrip: (v, km, c) => `${v} · ${km} கி.மீ பயணம் · மொத்தம் ₹${c}`,
+      states: { PROPOSED: 'சம்மதத்திற்குக் காத்திருக்கிறது', CONFIRMED: 'இருவரும் சம்மதம் ✓', TRANSPORT_ARRANGED: 'வண்டி ஏற்பாடு ஆனது', SOLD: 'விற்பனை ஆனது', COMPLETED: 'முடிந்தது', CANCELLED: 'ரத்து செய்யப்பட்டது' },
+      consented: 'சம்மதம் ✓', waiting: 'காத்திருக்கிறது', you: 'நீங்கள்',
+      th: ['பெயர்', 'கிலோ', 'பங்கு', 'தனியாக', 'மிச்சம்'], thSold: ['பெயர்', 'கிலோ', 'விற்பனை', 'வண்டிப் பங்கு', 'கையில்'],
+      savingTotal: (s) => `இருவருக்கும் சேர்த்து ₹${s} மிச்சம்`, soldAt: p => `கிலோ ₹${p}-க்கு விற்றது (கமிஷனுக்கு முன்)`,
+      accept: 'சம்மதம் தருகிறேன்', decline: 'வேண்டாம் (ரத்து)', demoAccept: n => `DEMO: ${n} சார்பாக சம்மதம்`,
+      arrange: 'வண்டி ஏற்பாடு செய்தேன்', salePrice: 'விற்ற விலை (₹/கிலோ)', sold: 'விற்பனை பதிவு', complete: 'பணம் பிரித்தாகிவிட்டது – முடி',
+      noMoreActions: 'இந்தக் கூட்டு விற்பனை முடிந்தது.',
+      events: { propose: 'கேட்டார்', accept: 'சம்மதம் தந்தார்', decline: 'ரத்து செய்தார்', arrange: 'வண்டி ஏற்பாடு', sold: 'விற்பனை பதிவு', complete: 'முடித்தார்' },
+      errors: { bad_qty: '10 முதல் 20,000 கிலோ வரை உள்ளிடுங்கள்.', no_gain: 'சேர்ந்தால் ஒருவருக்கு நஷ்டம், எனவே முடியாது.', not_open: 'இந்தப் பதிவு ஏற்கனவே ஒரு கூட்டில் உள்ளது.', invalid_action: 'இந்த நிலையில் அது முடியாது.', bad_price: 'சரியான விலையை உள்ளிடுங்கள்.', default: 'ஏதோ தவறு. மீண்டும் முயலுங்கள்.', offline: 'சர்வர் இணைப்பு இல்லை.' },
+      pickCrop: 'பயிரைத் தேர்ந்தெடுங்கள்.',
+    },
+    en: {
+      title: 'Sell together', lead: 'Send your produce to the mandi in one vehicle with a nearby farmer and share the transport cost.',
+      formTitle: 'My produce', qty: 'How many kg?', mandi: 'Which mandi?', name: 'Your name (shown to the other farmer)',
+      willing: 'I agree to share a vehicle', save: 'Save and find nearby farmers', newListing: 'Add new produce',
+      matchesTitle: 'Nearby farmers to share with', poolsTitle: 'My shared sales', splitTitle: 'Cost split',
+      splitNote: 'Transport is split by each farmer’s share of the kg. Figures are estimates.', historyTitle: 'History',
+      kg: n => `${n} kg`, km: n => `${n} km`, to: m => `to ${m}`,
+      status: { open: 'Looking', pooled: 'In a pool', sold: 'Sold' },
+      noMatch: 'No suitable farmer nearby right now. Your listing is visible to others.',
+      notWilling: 'Matches are shown only if you agree to share a vehicle.',
+      youSave: 'You save', theySave: 'They save', propose: 'Ask to send together', away: n => `${n} km away`,
+      vehicleTrip: (v, km, c) => `${v} · ${km} km trip · total ₹${c}`,
+      states: { PROPOSED: 'Waiting for consent', CONFIRMED: 'Both agreed ✓', TRANSPORT_ARRANGED: 'Transport arranged', SOLD: 'Sold', COMPLETED: 'Completed', CANCELLED: 'Cancelled' },
+      consented: 'Agreed ✓', waiting: 'Waiting', you: 'You',
+      th: ['Name', 'kg', 'Share', 'Alone', 'Saving'], thSold: ['Name', 'kg', 'Sale', 'Transport', 'In hand'],
+      savingTotal: s => `Together you save ₹${s}`, soldAt: p => `Sold at ₹${p}/kg (before commission)`,
+      accept: 'I agree', decline: 'No thanks (cancel)', demoAccept: n => `DEMO: agree on behalf of ${n}`,
+      arrange: 'I arranged the vehicle', salePrice: 'Sale price (₹/kg)', sold: 'Record sale', complete: 'Money shared – finish',
+      noMoreActions: 'This shared sale is finished.',
+      events: { propose: 'proposed', accept: 'agreed', decline: 'cancelled', arrange: 'arranged transport', sold: 'recorded the sale', complete: 'finished' },
+      errors: { bad_qty: 'Enter 10 to 20,000 kg.', no_gain: 'Sharing would cost one of you more, so it is not allowed.', not_open: 'This listing is already in a pool.', invalid_action: 'That is not possible at this step.', bad_price: 'Enter a valid price.', default: 'Something went wrong. Try again.', offline: 'No connection to the server.' },
+      pickCrop: 'Choose a crop.',
+    },
+  };
+  const MANDI_NAMES = { trichy: ['திருச்சி', 'Trichy'], manapparai: ['மணப்பாறை', 'Manapparai'], dindigul: ['திண்டுக்கல்', 'Dindigul'], oddanchatram: ['ஒட்டன்சத்திரம்', 'Oddanchatram'], karur: ['கரூர்', 'Karur'] };
+  const STEP = { PROPOSED: 1, CONFIRMED: 2, TRANSPORT_ARRANGED: 3, SOLD: 4, COMPLETED: 5, CANCELLED: 0 };
+
+  const lang = SK.store.get('sk-lang') || 'ta';
+  const t = T[lang];
+  const $ = id => document.getElementById(id);
+  // Whole rupees as-is, otherwise always 2 decimals (₹691.20, not ₹691.2)
+  const rs = v => { const n = Number(v); return Number.isInteger(n) ? n.toLocaleString('en-IN') : n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const mandiName = k => MANDI_NAMES[k]?.[lang === 'en' ? 1 : 0] ?? k;
+  const cropName = k => SK.CROPS[k]?.[lang === 'en' ? 'en' : 'ta'] ?? k;
+  const errText = e => (e.status ? t.errors[e.code] || e.message || t.errors.default : t.errors.offline);
+
+  const toastEl = $('toast'); let tId;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tId); tId = setTimeout(() => toastEl.classList.remove('show'), 2800); }
+
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => { const v = t[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
+  if (lang === 'en') [...$('mandi').options].forEach(o => { o.textContent = mandiName(o.value); });
+  SK.health().then(h => SK.banner(h.dataState, lang)).catch(() => {});
+
+  const pools = () => { try { return JSON.parse(SK.store.get('sk-pools') || '[]'); } catch { return []; } };
+  const rememberPool = id => SK.store.set('sk-pools', JSON.stringify([id, ...pools().filter(x => x !== id)].slice(0, 10)));
+
+  // ---------- List view ----------
+  let crop = SK.store.get('sk-crop') || 'tomato';
+  if (!SK.CROPS[crop]) crop = 'tomato';
+  let current = null;
+
+  function chips() {
+    $('crops').innerHTML = Object.entries(SK.CROPS).map(([k, c]) => `<button type="button" data-k="${k}" aria-pressed="${k === crop}"><span aria-hidden="true">${c.ico}</span> ${cropName(k)}</button>`).join('');
+    $('crops').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { crop = b.dataset.k; chips(); }));
+  }
+
+  function showListing(l) {
+    current = l;
+    $('form').hidden = true;
+    $('mine-wrap').hidden = false;
+    $('mine-ico').textContent = SK.CROPS[l.crop]?.ico ?? '🌱';
+    $('mine-title').textContent = `${cropName(l.crop)} · ${t.kg(l.qtyKg)}`;
+    $('mine-sub').textContent = `${t.to(mandiName(l.mandi))} · ${t.km(l.kmToMandi)}`;
+    $('mine-status').textContent = t.status[l.status] ?? l.status;
+    loadMatches(l);
+  }
+
+  async function loadMatches(l) {
+    $('matches-wrap').hidden = false;
+    if (!l.willing) { $('matches').innerHTML = `<p class="empty">${t.notWilling}</p>`; return; }
+    if (l.status !== 'open') { $('matches').innerHTML = ''; $('matches-wrap').hidden = true; return; }
+    let res;
+    try { res = await SK.together.matches(l.id); } catch (e) { $('matches').innerHTML = `<p class="empty">${errText(e)}</p>`; return; }
+    if (!res.matches.length) { $('matches').innerHTML = `<p class="empty">${t.noMatch}</p>`; return; }
+    $('matches').innerHTML = res.matches.map((m, i) => `
+      <article class="match">
+        <div class="who"><b>${esc(m.listing.name || '—')}</b><span>${t.away(m.distanceKm)}</span></div>
+        <div class="meta">${cropName(m.listing.crop)} · ${t.kg(m.listing.qtyKg)} · ${esc(t.vehicleTrip(lang === 'en' ? m.plan.vehicle.en : m.plan.vehicle.ta, m.plan.tripKm, rs(m.plan.sharedCost)))}</div>
+        <div class="save"><div><small>${t.youSave}</small><strong>₹${rs(m.myBenefit)}</strong></div><div><small>${t.theySave}</small><strong>₹${rs(m.theirBenefit)}</strong></div></div>
+        <button class="btn btn-primary" type="button" data-i="${i}">${t.propose}</button>
+      </article>`).join('');
+    $('matches').querySelectorAll('button[data-i]').forEach(b => b.addEventListener('click', async () => {
+      b.disabled = true;
+      try {
+        const { pool } = await SK.together.propose(l.id, res.matches[Number(b.dataset.i)].listing.id);
+        rememberPool(pool.id);
+        location.href = `together.html?pool=${pool.id}`;
+      } catch (e) { b.disabled = false; toast(errText(e)); }
+    }));
+  }
+
+  async function loadPools() {
+    const ids = pools();
+    if (!ids.length) return;
+    const rows = (await Promise.all(ids.map(id => SK.together.pool(id).then(r => r.pool).catch(() => null)))).filter(Boolean);
+    if (!rows.length) return;
+    $('pools-wrap').hidden = false;
+    $('pools').innerHTML = rows.map(p => `<a class="card" style="text-decoration:none;color:inherit;flex-direction:row;align-items:center" href="together.html?pool=${p.id}">
+      <span style="font-size:26px" aria-hidden="true">${SK.CROPS[p.crop]?.ico ?? '🌱'}</span>
+      <span style="flex:1;min-width:0"><b style="display:block;font-weight:800">${cropName(p.crop)} · ${t.kg(p.plan.totalKg)}</b><span class="meta">${t.states[p.state]}</span></span>
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`).join('');
+  }
+
+  $('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('form-error').textContent = '';
+    const qtyKg = Number($('qty').value);
+    try {
+      const { listing } = await SK.together.create({ crop, qtyKg, mandi: $('mandi').value, place: SK.place(), willing: $('willing').checked, name: $('name').value });
+      SK.store.set('sk-name', $('name').value);
+      showListing(listing);
+    } catch (err) { $('form-error').textContent = errText(err); }
+  });
+  $('new').addEventListener('click', () => { $('form').hidden = false; $('mine-wrap').hidden = true; $('matches-wrap').hidden = true; });
+
+  async function listView() {
+    chips();
+    $('name').value = SK.store.get('sk-name') || '';
+    try {
+      const { listings } = await SK.together.mine();
+      const latest = listings.find(l => l.status !== 'sold');
+      if (latest) showListing(latest);
+    } catch { /* first visit or offline: show the form */ }
+    loadPools();
+  }
+
+  // ---------- Pool view ----------
+  async function poolView(id) {
+    $('list-view').hidden = true;
+    $('pool-view').hidden = false;
+    $('back').href = 'together.html';
+    let pool;
+    try { pool = (await SK.together.pool(id)).pool; } catch (e) { $('state').textContent = errText(e); return; }
+    rememberPool(id);
+    drawPool(pool);
+  }
+
+  function drawPool(p) {
+    const step = STEP[p.state];
+    $('steps').querySelectorAll('span').forEach((s, i) => s.classList.toggle('on', i < step));
+    $('state').textContent = t.states[p.state];
+    $('state').classList.toggle('cancel', p.state === 'CANCELLED');
+    $('pool-meta').textContent = `${cropName(p.crop)} · ${t.kg(p.plan.totalKg)} · ${t.to(mandiName(p.mandi))}`;
+    const label = m => esc(m.name || (m.isYou ? t.you : '—')) + (m.isYou ? ` <span class="meta">(${t.you})</span>` : '');
+    $('people').innerHTML = p.members.map(m => `<div class="person"><span>${label(m)}</span>${m.consented ? `<span class="ok">${t.consented}</span>` : `<span class="wait">${t.waiting}</span>`}</div>`).join('');
+
+    $('trip').textContent = t.vehicleTrip(lang === 'en' ? p.plan.vehicle.en : p.plan.vehicle.ta, p.plan.tripKm, rs(p.plan.sharedCost));
+    const sold = p.soldPricePerKg != null;
+    const head = (sold ? t.thSold : t.th).map(h => `<th>${h}</th>`).join('');
+    const body = p.plan.members.map(m => {
+      const who = label(m);
+      return sold
+        ? `<tr><td>${who}</td><td>${m.qtyKg}</td><td>₹${rs(m.gross)}</td><td>₹${rs(m.sharedPart)}</td><td class="gain">₹${rs(m.takeHome)}</td></tr>`
+        : `<tr><td>${who}</td><td>${m.qtyKg}</td><td>₹${rs(m.sharedPart)}</td><td>₹${rs(m.soloCost)}</td><td class="gain">₹${rs(m.benefit)}</td></tr>`;
+    }).join('');
+    $('split').innerHTML = `<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
+    $('saving').textContent = sold ? `${t.savingTotal(rs(p.plan.totalSaving))} · ${t.soldAt(p.soldPricePerKg)}` : t.savingTotal(rs(p.plan.totalSaving));
+
+    const me = p.members.find(m => m.isYou);
+    const demoWaiting = p.members.filter(m => m.demo && !m.consented);
+    const btn = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + cls; b.textContent = label; b.addEventListener('click', fn); return b; };
+    const run = (action, extra) => async () => {
+      $('action-error').textContent = '';
+      try { drawPool((await SK.together.act(p.id, action, extra)).pool); } catch (e) { $('action-error').textContent = errText(e); }
+    };
+    const box = $('actions'); box.innerHTML = '';
+    if (p.state === 'PROPOSED') {
+      if (me && !me.consented) box.append(btn(t.accept, 'btn-primary', run('accept')));
+      demoWaiting.forEach(d => box.append(btn(t.demoAccept(d.name), 'btn-demo', run('accept', { asDemo: d.farmer }))));
+    }
+    if (p.state === 'CONFIRMED') box.append(btn(t.arrange, 'btn-primary', run('arrange', { vehicle: p.plan.vehicle.key })));
+    if (p.state === 'TRANSPORT_ARRANGED') {
+      const wrap = document.createElement('div'); wrap.className = 'sale';
+      wrap.innerHTML = `<label class="f"><span>${t.salePrice}</span><input id="price" inputmode="decimal" placeholder="18.50"></label>`;
+      wrap.append(btn(t.sold, 'btn-primary', () => run('sold', { pricePerKg: Number($('price').value) })()));
+      box.append(wrap);
+    }
+    if (p.state === 'SOLD') box.append(btn(t.complete, 'btn-primary', run('complete')));
+    if (['PROPOSED', 'CONFIRMED', 'TRANSPORT_ARRANGED'].includes(p.state)) box.append(btn(t.decline, 'btn-line', run('decline')));
+    if (!box.children.length) box.innerHTML = `<p class="meta">${t.noMoreActions}</p>`;
+
+    $('timeline').innerHTML = p.events.map(e => `<li><b>${esc(e.name || t.you)}</b> ${t.events[e.action] ?? e.action}${e.detail ? ` · ${esc(e.detail)}` : ''} · <span>${new Date(e.at).toLocaleString(lang === 'en' ? 'en-IN' : 'ta-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></li>`).join('');
+  }
+
+  const poolId = new URLSearchParams(location.search).get('pool');
+  if (poolId) poolView(poolId); else listView();
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Weather</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .now { flex-direction: row; align-items: center; gap: 16px; background: var(--paddy); color: #fff; border-color: var(--paddy); }
+    .now .ico { font-size: 56px; line-height: 1; }
+    .now .t { font-size: 48px; font-weight: 800; line-height: 1; }
+    .now .meta { color: #e6f0e2; }
+    .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .facts div { background: var(--cream); border-radius: 12px; padding: 8px 10px; }
+    .facts small { display: block; font-size: 12px; font-weight: 800; color: var(--soil-2); }
+    .facts b { font-size: 18px; font-weight: 800; }
+    .day { display: grid; grid-template-columns: 64px 36px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 10px 0; border-top: 2px solid #f1e8d8; }
+    .day:first-child { border-top: 0; }
+    .day .d { font-weight: 800; }
+    .day .ico { font-size: 26px; }
+    .day .rain { font-size: 14px; color: #2b6aa3; font-weight: 800; }
+    .day .tt { font-weight: 800; white-space: nowrap; }
+    .hint { background: #e7f1fb; border: 2px solid #b9d4ef; border-radius: 16px; padding: 12px 14px; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="head">
+    <a class="icon-btn" href="home.html" aria-label="Back"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 data-i18n="title">வானிலை</h1>
+  </header>
+  <main class="page">
+    <p class="empty" id="msg" data-i18n="loading">வானிலை ஏற்றப்படுகிறது…</p>
+    <section class="card now" id="now" hidden><span class="ico" id="nowIco" aria-hidden="true"></span><span><span class="t" id="nowT"></span><br><span class="meta" id="nowText"></span></span></section>
+    <section class="card" id="factsCard" hidden><div class="facts" id="facts"></div></section>
+    <p class="hint" id="hint" hidden></p>
+    <section class="card" id="daysCard" hidden><h2 data-i18n="next">அடுத்த 5 நாள்</h2><div id="days"></div></section>
+    <p class="note" id="src"></p>
+  </main>
+</div>
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script>
+  const T = {
+    ta: {
+      title: 'வானிலை', loading: 'வானிலை ஏற்றப்படுகிறது…', next: 'அடுத்த 5 நாள்', hum: 'ஈரப்பதம்', wind: 'காற்று', rainNow: 'மழை',
+      unavailable: 'வானிலை தகவல் இப்போது கிடைக்கவில்லை. இணைய இணைப்பைப் பார்த்து மீண்டும் முயலுங்கள்.',
+      hint: 'அடுத்த இரண்டு நாளில் மழை வாய்ப்பு அதிகம்: அறுவடையும் சந்தைக்கு அனுப்புவதும் முன்கூட்டியே திட்டமிடுங்கள்.',
+      src: (p, t) => `${p} · ஆதாரம்: Open-Meteo · ${t}`, today: 'இன்று',
+      codes: { clear: 'தெளிவான வானம்', cloud: 'மேகமூட்டம்', fog: 'மூடுபனி', drizzle: 'தூறல்', rain: 'மழை', storm: 'இடியுடன் மழை' },
+    },
+    en: {
+      title: 'Weather', loading: 'Loading weather…', next: 'Next 5 days', hum: 'Humidity', wind: 'Wind', rainNow: 'Rain',
+      unavailable: 'Weather is not available right now. Check your internet connection and try again.',
+      hint: 'High chance of rain in the next two days: plan harvest and transport early.',
+      src: (p, t) => `${p} · Source: Open-Meteo · ${t}`, today: 'Today',
+      codes: { clear: 'Clear sky', cloud: 'Cloudy', fog: 'Fog', drizzle: 'Drizzle', rain: 'Rain', storm: 'Thunderstorm' },
+    },
+  }[UI.lang];
+  UI.apply(T);
+  const $ = id => document.getElementById(id);
+
+  // WMO weather codes, simplified
+  function look(code) {
+    if (code === 0) return ['☀️', T.codes.clear];
+    if (code <= 3) return ['⛅', T.codes.cloud];
+    if (code === 45 || code === 48) return ['🌫️', T.codes.fog];
+    if (code >= 51 && code <= 57) return ['🌦️', T.codes.drizzle];
+    if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return ['🌧️', T.codes.rain];
+    if (code >= 95) return ['⛈️', T.codes.storm];
+    return ['☁️', T.codes.cloud];
+  }
+  const weekday = iso => new Date(iso + 'T00:00:00').toLocaleDateString(UI.en ? 'en-IN' : 'ta-IN', { weekday: 'short', day: 'numeric' });
+
+  SK.weather().then(w => {
+    const c = w.current, d = w.daily;
+    const [ico, text] = look(c.weather_code);
+    $('msg').hidden = true;
+    $('now').hidden = $('factsCard').hidden = $('daysCard').hidden = false;
+    $('nowIco').textContent = ico;
+    $('nowT').textContent = `${Math.round(c.temperature_2m)}°C`;
+    $('nowText').textContent = text;
+    $('facts').innerHTML = `<div><small>${T.hum}</small><b>${c.relative_humidity_2m ?? '—'}%</b></div><div><small>${T.wind}</small><b>${c.wind_speed_10m ?? '—'} km/h</b></div><div><small>${T.rainNow}</small><b>${c.precipitation ?? 0} mm</b></div>`;
+    $('days').innerHTML = d.time.map((t, i) => {
+      const [di] = look(d.weather_code?.[i]);
+      const p = d.precipitation_probability_max?.[i];
+      return `<div class="day"><span class="d">${i === 0 ? T.today : weekday(t)}</span><span class="ico" aria-hidden="true">${di}</span><span class="rain">${p != null ? `💧 ${p}%` : ''}${d.precipitation_sum?.[i] ? ` · ${d.precipitation_sum[i]} mm` : ''}</span><span class="tt">${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°</span></div>`;
+    }).join('');
+    const wet = (d.precipitation_probability_max ?? []).slice(0, 2).some(p => p >= 60);
+    $('hint').hidden = !wet;
+    $('hint').textContent = T.hint;
+    $('src').textContent = T.src(SK.placeName(UI.lang), UI.time(w.fetchedAt));
+  }).catch(() => { $('msg').textContent = T.unavailable; });
+</script>
+</body>
+</html>

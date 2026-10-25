@@ -14,7 +14,8 @@ export function parseDate(s) {
   return dt.toISOString().slice(0, 10);
 }
 
-const num = v => (v === '' || v == null ? NaN : Number(v));
+// "1,900" → 1900; "", "NR" or missing → NaN (no price, never ₹0)
+const num = v => (v === '' || v == null ? NaN : Number(String(v).replace(/,/g, '')));
 
 // The API has served both "modal_price" and "Modal_x0020_Price" style keys
 export function normalise(rec) {
@@ -33,9 +34,14 @@ export function mapMandi(market) {
   return null;
 }
 
+// Different crops that share a keyword: small onion is sold separately and priced differently from onion
+const NOT_OUR_CROP = ['small onion'];
+
+// Match by keyword so variants like "Banana - Green" or "Paddy(Dhan)(Basmati)" are kept
 export function mapCrop(commodity) {
   const name = String(commodity || '').toLowerCase();
-  for (const [id, c] of Object.entries(CROPS)) if (c.feed.toLowerCase() === name) return id;
+  if (NOT_OUR_CROP.some(x => name.includes(x))) return null;
+  for (const [id, c] of Object.entries(CROPS)) if (name.includes(c.keyword)) return id;
   return null;
 }
 

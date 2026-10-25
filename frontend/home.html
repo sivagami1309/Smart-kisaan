@@ -68,6 +68,12 @@
     .offer strong { display: block; font-size: 19px; line-height: 1.2; font-weight: 800; }
     .offer span { display: block; font-size: 15px; color: var(--soil-2); margin-top: 2px; }
     .offer .go { margin-left: auto; flex: none; }
+    .greet-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .bell { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; position: relative; background: var(--card); border: 2px solid var(--line); flex: none; text-decoration: none; }
+    .crop .best { display: block; font-size: 13px; font-weight: 800; color: var(--paddy-deep); margin-top: 4px; }
+    .svc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+    .svc a { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border-radius: 16px; background: var(--card); border: 2px solid var(--line); text-decoration: none; color: var(--soil); text-align: center; font-weight: 800; font-size: 14px; line-height: 1.2; min-height: 92px; justify-content: center; }
+    .svc a span:first-child { font-size: 26px; }
 
     .source { font-size: 14px; color: var(--soil-2); display: flex; gap: 8px; align-items: flex-start; }
     .source .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--turmeric); flex: none; margin-top: 6px; }
@@ -103,7 +109,13 @@
 
   <main>
     <section class="greet">
-      <h1 id="hello">வணக்கம்!</h1>
+      <div class="greet-row">
+        <h1 id="hello">வணக்கம்!</h1>
+        <a class="bell" href="notifications.html" id="bell" aria-label="Notifications">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Z" fill="#2e2016"/><path d="M10 20a2 2 0 0 0 4 0" stroke="#2e2016" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <span class="dot-badge" id="unread" hidden></span>
+        </a>
+      </div>
       <p data-i18n="ask">இன்று எந்தப் பயிரின் விலை வேண்டும்?</p>
       <button class="chip" id="loc" type="button">
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" fill="#d4412c"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>
@@ -127,24 +139,24 @@
       <div class="crops" style="margin-top:14px">
         <button class="crop featured" data-crop="tomato" type="button">
           <span class="ico" style="background:#fbe5e1">🍅</span>
-          <span><span class="ta" data-i18n="tomato">தக்காளி</span><br><span class="en" data-i18n="tomatoSub">Tomato</span></span>
+          <span><span class="ta" data-i18n="tomato">தக்காளி</span><br><span class="en" data-i18n="tomatoSub">Tomato</span><span class="best" data-best="tomato"></span></span>
           <span class="tag" data-i18n="last">சமீபத்தில்</span>
         </button>
         <button class="crop" data-crop="onion" type="button">
           <span class="ico" style="background:#f3e3ef">🧅</span>
-          <span><span class="ta" data-i18n="onion">வெங்காயம்</span><br><span class="en" data-i18n="onionSub">Onion</span></span>
+          <span><span class="ta" data-i18n="onion">வெங்காயம்</span><br><span class="en" data-i18n="onionSub">Onion</span><span class="best" data-best="onion"></span></span>
         </button>
         <button class="crop" data-crop="paddy" type="button">
           <span class="ico" style="background:#f6eccf">🌾</span>
-          <span><span class="ta" data-i18n="paddy">நெல்</span><br><span class="en" data-i18n="paddySub">Paddy</span></span>
+          <span><span class="ta" data-i18n="paddy">நெல்</span><br><span class="en" data-i18n="paddySub">Paddy</span><span class="best" data-best="paddy"></span></span>
         </button>
         <button class="crop" data-crop="banana" type="button">
           <span class="ico" style="background:#fbf1c4">🍌</span>
-          <span><span class="ta" data-i18n="banana">வாழை</span><br><span class="en" data-i18n="bananaSub">Banana</span></span>
+          <span><span class="ta" data-i18n="banana">வாழை</span><br><span class="en" data-i18n="bananaSub">Banana</span><span class="best" data-best="banana"></span></span>
         </button>
         <button class="crop" data-crop="groundnut" type="button">
           <span class="ico" style="background:#f1e4d4">🥜</span>
-          <span><span class="ta" data-i18n="groundnut">நிலக்கடலை</span><br><span class="en" data-i18n="groundnutSub">Groundnut</span></span>
+          <span><span class="ta" data-i18n="groundnut">நிலக்கடலை</span><br><span class="en" data-i18n="groundnutSub">Groundnut</span><span class="best" data-best="groundnut"></span></span>
         </button>
       </div>
     </section>
@@ -157,6 +169,27 @@
       </span>
       <svg class="go" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
+
+    <a class="offer" href="together.html" style="text-decoration:none;color:inherit;background:var(--paddy-tint);border-color:#b8d2b0">
+      <span class="badge" aria-hidden="true" style="background:var(--paddy);color:#fff;font-size:22px">🚚</span>
+      <span>
+        <strong data-i18n="together">சேர்ந்து விற்போம்</strong>
+        <span data-i18n="togetherSub">அருகிலுள்ளவருடன் வண்டிச் செலவைப் பகிருங்கள்</span>
+      </span>
+      <svg class="go" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+
+    <section aria-labelledby="more-title">
+      <h2 class="section-title" id="more-title" data-i18n="more">மேலும்</h2>
+      <div class="svc">
+        <a href="profit.html"><span aria-hidden="true">🧮</span><span data-i18n="sProfit">லாபக் கணக்கு</span></a>
+        <a href="sales.html"><span aria-hidden="true">🧾</span><span data-i18n="sSales">என் விற்பனைகள்</span></a>
+        <a href="markets.html"><span aria-hidden="true">📍</span><span data-i18n="sMarkets">அருகில் சந்தைகள்</span></a>
+        <a href="weather.html"><span aria-hidden="true">🌦️</span><span data-i18n="sWeather">வானிலை</span></a>
+        <a href="tips.html"><span aria-hidden="true">💡</span><span data-i18n="sTips">குறிப்புகள்</span></a>
+        <a href="notifications.html"><span aria-hidden="true">🔔</span><span data-i18n="sNotes">அறிவிப்புகள்</span></a>
+      </div>
+    </section>
 
     <p class="source"><span class="dot" aria-hidden="true"></span><span data-i18n="source">விலை ஆதாரம்: Agmarknet (data.gov.in). நேரடி இணைப்பு இன்னும் சோதிக்கப்படவில்லை.</span></p>
   </main>
@@ -192,6 +225,9 @@
       tomato: 'தக்காளி', onion: 'வெங்காயம்', paddy: 'நெல்', banana: 'வாழை', groundnut: 'நிலக்கடலை',
       tomatoSub: 'Tomato', onionSub: 'Onion', paddySub: 'Paddy', bananaSub: 'Banana', groundnutSub: 'Groundnut',
       offer: 'வியாபாரி சொன்ன விலை சரியா?', offerSub: 'சிறந்த சந்தை விலையுடன் ஒப்பிடுங்கள்',
+      together: 'சேர்ந்து விற்போம்', togetherSub: 'அருகிலுள்ளவருடன் வண்டிச் செலவைப் பகிருங்கள்',
+      more: 'மேலும்', sProfit: 'லாபக் கணக்கு', sSales: 'என் விற்பனைகள்', sMarkets: 'அருகில் சந்தைகள்', sWeather: 'வானிலை', sTips: 'குறிப்புகள்', sNotes: 'அறிவிப்புகள்',
+      best: (v, m) => `சிறந்தது ₹${v} · ${m}`,
       source: 'விலை ஆதாரம்: Agmarknet (data.gov.in). நேரடி இணைப்பு இன்னும் சோதிக்கப்படவில்லை.',
       navHome: 'முகப்பு', navOffer: 'விலை சரிபார்', navMe: 'நான்',
       next: c => `அடுத்த திரை: ${c} – அருகிலுள்ள சந்தை விலை ஒப்பீடு (வடிவமைப்பில்)`,
@@ -207,6 +243,9 @@
       tomato: 'Tomato', onion: 'Onion', paddy: 'Paddy', banana: 'Banana', groundnut: 'Groundnut',
       tomatoSub: 'தக்காளி', onionSub: 'வெங்காயம்', paddySub: 'நெல்', bananaSub: 'வாழை', groundnutSub: 'நிலக்கடலை',
       offer: "Is the trader's price fair?", offerSub: 'Compare it with the best mandi price',
+      together: 'Sell together', togetherSub: 'Share the vehicle cost with a nearby farmer',
+      more: 'More', sProfit: 'Profit', sSales: 'My sales', sMarkets: 'Nearby markets', sWeather: 'Weather', sTips: 'Tips', sNotes: 'Alerts',
+      best: (v, m) => `Best ₹${v} · ${m}`,
       source: 'Price source: Agmarknet (data.gov.in). Live connection not yet tested.',
       navHome: 'Home', navOffer: 'Offer check', navMe: 'Me',
       next: c => `Next screen: ${c} – nearby mandi price comparison (in design)`,
@@ -271,13 +310,33 @@
     rec.onresult = e => {
       const said = e.results[0][0].transcript.toLowerCase();
       const hit = Object.keys(words).find(k => words[k].some(w => said.includes(w)));
-      hit ? openCrop(hit) : toast(T[lang].notHeard);
+      SK.voice(said)
+        .then(r => { if (r.href) location.href = r.href; else toast(T[lang].notHeard); })
+        .catch(() => { hit ? openCrop(hit) : toast(T[lang].notHeard); });
     };
     rec.start();
   });
 
   applyLang();
   SK.health().then(h => { lastHealth = h; applyLang(); }).catch(() => {});
+
+  // Today's best money-in-hand on each crop tile (prices board)
+  let board = null;
+  function drawBoard() {
+    if (!board) return;
+    for (const c of board.crops) {
+      const el = document.querySelector(`[data-best="${c.crop}"]`);
+      if (el) el.textContent = c.best ? T[lang].best(c.best.net.toFixed(2), lang === 'en' ? c.best.en.split(' ')[0] : c.best.ta) : '';
+    }
+  }
+  SK.board().then(b => { board = b; drawBoard(); }).catch(() => {});
+  document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', drawBoard));
+
+  SK.notifications.list().then(n => {
+    const el = document.getElementById('unread');
+    el.hidden = !n.unread;
+    el.textContent = n.unread > 9 ? '9+' : String(n.unread);
+  }).catch(() => {});
 </script>
 </body>
 </html>

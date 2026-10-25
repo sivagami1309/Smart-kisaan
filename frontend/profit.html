@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Profit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <div class="demo-banner" role="status"><span data-sk-banner>DEMO DATA – NOT LIVE MARKET PRICES · மாதிரி தரவு</span></div>
+  <header class="head">
+    <a class="icon-btn" href="home.html" aria-label="Back"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 data-i18n="title">லாபக் கணக்கு</h1>
+  </header>
+
+  <main class="page">
+    <p class="meta" data-i18n="lead">விற்றால் கையில் எவ்வளவு மிஞ்சும் என்று பாருங்கள். காலியாக விட்டால் இன்றைய சந்தை விலையும் வண்டிச் செலவு மதிப்பீடும் பயன்படும்.</p>
+
+    <section class="card">
+      <div class="chiprow" id="crops" role="group" aria-label="Crop"></div>
+      <div class="row2">
+        <label class="f"><span data-i18n="qty">எவ்வளவு கிலோ?</span><input id="qtyKg" inputmode="numeric" value="300"></label>
+        <label class="f"><span data-i18n="mandi">எந்த சந்தை?</span>
+          <select id="mandi" data-mandis><option value="trichy">திருச்சி</option><option value="manapparai">மணப்பாறை</option><option value="dindigul">திண்டுக்கல்</option><option value="oddanchatram">ஒட்டன்சத்திரம்</option><option value="karur">கரூர்</option></select>
+        </label>
+      </div>
+      <div class="row2">
+        <label class="f"><span data-i18n="price">விலை ₹/கிலோ</span><input id="pricePerKg" inputmode="decimal"></label>
+        <label class="f"><span data-i18n="transport">வண்டிச் செலவு ₹</span><input id="transport" inputmode="decimal"></label>
+      </div>
+      <div class="row2">
+        <label class="f"><span data-i18n="comm">கமிஷன் %</span><input id="commissionPct" inputmode="decimal" value="8"></label>
+        <label class="f"><span data-i18n="loading">ஏற்று/இறக்கு ₹</span><input id="loading" inputmode="decimal" value="0"></label>
+      </div>
+    </section>
+
+    <section class="card" id="result" aria-live="polite">
+      <span class="meta" data-i18n="netLabel">கையில் மிஞ்சுவது</span>
+      <span class="big-num" id="net">—</span>
+      <span class="meta" id="perKg"></span>
+      <table class="lines" id="lines"></table>
+      <p class="note" id="from"></p>
+      <a class="btn btn-ghost" id="toSale" href="sales.html" data-i18n="toSale">இதை என் விற்பனையாகப் பதிவு செய்</a>
+    </section>
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script>
+  const T = {
+    ta: {
+      title: 'லாபக் கணக்கு', lead: 'விற்றால் கையில் எவ்வளவு மிஞ்சும் என்று பாருங்கள். காலியாக விட்டால் இன்றைய சந்தை விலையும் வண்டிச் செலவு மதிப்பீடும் பயன்படும்.',
+      qty: 'எவ்வளவு கிலோ?', mandi: 'எந்த சந்தை?', price: 'விலை ₹/கிலோ', transport: 'வண்டிச் செலவு ₹', comm: 'கமிஷன் %', loading: 'ஏற்று/இறக்கு ₹',
+      netLabel: 'கையில் மிஞ்சுவது', toSale: 'இதை என் விற்பனையாகப் பதிவு செய்',
+      perKg: v => `கிலோவுக்கு ₹${v}`, gross: 'விற்பனைத் தொகை', tr: 'வண்டி', cm: 'கமிஷன்', ld: 'ஏற்று/இறக்கு', net: 'கையில்',
+      from: (d, o) => `விலை: ${d} அன்று, ${o}.`, own: 'நீங்கள் கொடுத்த விலை.',
+      est: (v, km, c) => `வண்டி மதிப்பீடு: ${v}, ${km} கி.மீ, ₹${c}.`, loss: 'நஷ்டம்',
+    },
+    en: {
+      title: 'Profit calculator', lead: 'See what is left in your hand after a sale. Leave fields empty to use today’s mandi price and an estimated vehicle cost.',
+      qty: 'How many kg?', mandi: 'Which mandi?', price: 'Price ₹/kg', transport: 'Transport ₹', comm: 'Commission %', loading: 'Loading ₹',
+      netLabel: 'Left in your hand', toSale: 'Record this as my sale',
+      perKg: v => `₹${v} per kg`, gross: 'Sale amount', tr: 'Transport', cm: 'Commission', ld: 'Loading', net: 'In hand',
+      from: (d, o) => `Price: ${d}, ${o}.`, own: 'Price you entered.',
+      est: (v, km, c) => `Vehicle estimate: ${v}, ${km} km, ₹${c}.`, loss: 'Loss',
+    },
+  }[UI.lang];
+  UI.apply(T);
+  const $ = id => document.getElementById(id);
+  SK.health().then(h => SK.banner(h.dataState, UI.lang)).catch(() => {});
+
+  let crop = new URLSearchParams(location.search).get('crop') || SK.store.get('sk-crop') || 'tomato';
+  if (!SK.CROPS[crop]) crop = 'tomato';
+  const c = SK.loadCost();
+  $('commissionPct').value = c.comm;
+
+  function chips() {
+    $('crops').innerHTML = Object.entries(SK.CROPS).map(([k, v]) => `<button type="button" data-k="${k}" aria-pressed="${k === crop}"><span aria-hidden="true">${v.ico}</span> ${UI.crop(k)}</button>`).join('');
+    $('crops').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { crop = b.dataset.k; chips(); update(); }));
+  }
+
+  let timer, seq = 0;
+  function update() { clearTimeout(timer); timer = setTimeout(calc, 250); }
+  async function calc() {
+    const q = { crop, mandi: $('mandi').value, qtyKg: $('qtyKg').value };
+    for (const id of ['pricePerKg', 'transport', 'commissionPct', 'loading']) if ($(id).value.trim() !== '') q[id] = $(id).value.trim();
+    const my = ++seq;
+    let r;
+    try { r = await SK.profit(q); } catch (e) { if (my === seq) { $('net').textContent = '—'; $('lines').innerHTML = ''; $('from').textContent = UI.errText(e); } return; }
+    if (my !== seq) return;
+    const p = r.profit;
+    $('net').textContent = `₹${UI.rs(p.net)}`;
+    $('net').style.color = p.net < 0 ? 'var(--tomato)' : 'var(--paddy-deep)';
+    $('perKg').textContent = (p.net < 0 ? `${T.loss} · ` : '') + T.perKg(UI.rs(p.netPerKg));
+    $('lines').innerHTML = `
+      <tr><td>${T.gross} (${r.qtyKg} × ₹${UI.rs(r.pricePerKg)})</td><td>₹${UI.rs(p.gross)}</td></tr>
+      <tr><td>− ${T.tr}</td><td>₹${UI.rs(p.transport)}</td></tr>
+      <tr><td>− ${T.cm} (${q.commissionPct ?? 8}%)</td><td>₹${UI.rs(p.commission)}</td></tr>
+      ${p.loading ? `<tr><td>− ${T.ld}</td><td>₹${UI.rs(p.loading)}</td></tr>` : ''}
+      <tr class="total"><td>${T.net}</td><td>₹${UI.rs(p.net)}</td></tr>`;
+    const v = r.transportEstimate;
+    $('pricePerKg').placeholder = UI.rs(r.pricePerKg);
+    $('transport').placeholder = UI.rs(v.cost);
+    $('from').textContent = (r.priceFrom ? T.from(UI.day(r.priceFrom.date), UI.origin(r.priceFrom.origin)) : T.own) + ' ' + T.est(UI.en ? v.vehicle.en : v.vehicle.ta, v.km, UI.rs(v.cost));
+    const sale = new URLSearchParams({ crop, mandi: q.mandi, qtyKg: r.qtyKg, pricePerKg: r.pricePerKg, transport: p.transport, commissionPct: q.commissionPct ?? 8 });
+    $('toSale').href = 'sales.html?' + sale;
+  }
+
+  ['qtyKg', 'mandi', 'pricePerKg', 'transport', 'commissionPct', 'loading'].forEach(id => $(id).addEventListener('input', update));
+  chips();
+  calc();
+</script>
+</body>
+</html>

@@ -2,32 +2,30 @@
 import { pathToFileURL } from 'node:url';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { CROPS, STATE, RESOURCE_ID } from './config.js';
+import { STATE, RESOURCE_ID } from './config.js';
 import { cleanRecords } from './clean.js';
 import { openDb, insertRows, logIngestion } from './db.js';
 import { APP_DIR, dbPath, loadEnv } from './paths.js';
 
-export function buildUrl({ apiKey, commodity, offset = 0, limit = 500 }) {
+// State filter only: crops are matched by keyword in clean.js, so variants are not missed
+export function buildUrl({ apiKey, offset = 0, limit = 500 }) {
   const u = new URL(`https://api.data.gov.in/resource/${RESOURCE_ID}`);
   u.searchParams.set('api-key', apiKey);
   u.searchParams.set('format', 'json');
   u.searchParams.set('offset', String(offset));
   u.searchParams.set('limit', String(limit));
   u.searchParams.set('filters[state]', STATE);
-  u.searchParams.set('filters[commodity]', commodity);
   return u.toString();
 }
 
-export async function fetchAll({ apiKey, fetchFn = fetch, limit = 500, crops = Object.values(CROPS).map(c => c.feed) }) {
+export async function fetchAll({ apiKey, fetchFn = fetch, limit = 500, maxPages = 40 }) {
   const out = [];
-  for (const commodity of crops) {
-    for (let offset = 0; ; offset += limit) {
-      const res = await fetchFn(buildUrl({ apiKey, commodity, offset, limit }));
-      if (!res.ok) throw new Error(`data.gov.in returned HTTP ${res.status} for ${commodity}`);
-      const records = (await res.json()).records || [];
-      out.push(...records);
-      if (records.length < limit) break;
-    }
+  for (let page = 0; page < maxPages; page++) {
+    const res = await fetchFn(buildUrl({ apiKey, offset: page * limit, limit }));
+    if (!res.ok) throw new Error(`data.gov.in returned HTTP ${res.status}`);
+    const records = (await res.json()).records || [];
+    out.push(...records);
+    if (records.length < limit) break;
   }
   return out;
 }

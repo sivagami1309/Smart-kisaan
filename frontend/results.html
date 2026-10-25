@@ -243,6 +243,14 @@
   const alt = m => lang === 'ta' ? m.en : m.ta;
   const maps = m => `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lon}`;
 
+  // Traceability: where this price came from and when it was fetched
+  const ORIGIN = { demo: ['மாதிரி தரவு', 'demo data'], agmarknet: ['Agmarknet (data.gov.in)', 'Agmarknet (data.gov.in)'], manual: ['நிர்வாகி பதிவு செய்தது', 'entered by admin'] };
+  function srcLine(r) {
+    const o = ORIGIN[r.origin]?.[lang === 'en' ? 1 : 0] ?? '—';
+    const when = r.fetchedAt ? new Date(r.fetchedAt).toLocaleString(lang === 'en' ? 'en-IN' : 'ta-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+    return lang === 'en' ? `Source: ${o}${when ? ` · fetched ${when}` : ''}` : `ஆதாரம்: ${o}${when ? ` · ${when}` : ''}`;
+  }
+
   function sparkSvg(points) {
     if (points.length < 2) return `<span>${t.noTrend}</span>`;
     const vals = points.map(p => p.modal), lo = Math.min(...vals), hi = Math.max(...vals);
@@ -316,6 +324,7 @@
               <tr><td>− ${t.cComm} (${cost.comm}%)</td><td>₹${money(r.commission)}</td></tr>
               <tr class="total"><td>${t.cNet}</td><td>₹${money(r.net)}</td></tr>
             </table>
+            <p class="note" style="margin-top:8px">${srcLine(r)}</p>
             <div class="spark"></div>
             <div class="row-actions"><a href="${maps(r)}" target="_blank" rel="noopener">${t.dirs}</a></div>
           </div>

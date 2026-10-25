@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Farming tips</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .tip { flex-direction: row; gap: 14px; align-items: flex-start; }
+    .tip .n { width: 40px; height: 40px; border-radius: 12px; background: var(--turmeric-tint); display: grid; place-items: center; font-size: 22px; flex: none; }
+    .tip b { display: block; font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .tip p { font-size: 16px; line-height: 1.5; color: var(--soil-2); }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="head">
+    <a class="icon-btn" href="home.html" aria-label="Back"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 data-i18n="title">விவசாயக் குறிப்புகள்</h1>
+  </header>
+  <main class="page">
+    <div id="list" style="display:flex;flex-direction:column;gap:12px"></div>
+    <p class="note" data-i18n="kcc">பயிர் நோய், பூச்சிக்கொல்லி பற்றிய கேள்விகளுக்கு கிசான் அழைப்பு மையம்: 1800-180-1551 (இலவசம்).</p>
+  </main>
+</div>
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script>
+  // The six tips from the earlier Smart Kisaan project
+  const TIPS = [
+    ['⚖️', ['விற்கும் முன் விலையை ஒப்பிடுங்கள்', 'குறைந்தது இரண்டு சந்தைகளின் விலையையும் போக்குவரத்துச் செலவையும் ஒப்பிட்ட பிறகு எங்கு விற்பது என்று முடிவு செய்யுங்கள்.'], ['Compare before you sell', 'Check prices in at least two markets and add transport cost before deciding where to sell.']],
+    ['🍅', ['தரம் பிரித்து விற்கவும்', 'பெரிய, சீரான காய்களைத் தனியாகப் பிரித்தால் பெரும்பாலும் நல்ல விலை கிடைக்கும்.'], ['Grade your produce', 'Sorting by size and quality usually earns a better price than selling mixed lots.']],
+    ['🌅', ['அறுவடை நேரம்', 'தக்காளி போன்ற விரைவில் கெடும் பயிர்களை அதிகாலையில் அறுவடை செய்து, நிழலில் வைத்து, அன்றே சந்தைக்கு அனுப்புங்கள்.'], ['Harvest timing', 'Pick perishable crops like tomato early in the morning, keep them in shade and send them to market the same day.']],
+    ['🧅', ['சேமிப்பு', 'வெங்காயம், பூண்டு போன்றவற்றை காற்றோட்டமுள்ள உலர்ந்த இடத்தில் சேமித்தால் நீண்ட நாள் கெடாமல் இருக்கும்.'], ['Storage', 'Store onion and garlic in a dry, well-ventilated place to reduce spoilage.']],
+    ['🚚', ['சேர்ந்து அனுப்புங்கள்', 'அருகிலுள்ள விவசாயிகளுடன் ஒரே வண்டியில் அனுப்பினால் போக்குவரத்துச் செலவு பகிரப்படும்.'], ['Ship together', 'Sharing one vehicle with nearby farmers splits the transport cost.']],
+    ['🧪', ['பூச்சிக்கொல்லி பாதுகாப்பு', 'பூச்சிக்கொல்லி அளவு மற்றும் வகைக்கு வேளாண் அலுவலர் அல்லது கிசான் அழைப்பு மையத்தின் ஆலோசனையைப் பெறுங்கள்; லேபிளில் உள்ள காத்திருப்பு காலத்தைப் பின்பற்றுங்கள்.'], ['Pesticide safety', 'Ask an agriculture officer or the Kisan Call Centre about pesticide type and dose, and follow the waiting period on the label.']],
+  ];
+  const T = {
+    ta: { title: 'விவசாயக் குறிப்புகள்', kcc: 'பயிர் நோய், பூச்சிக்கொல்லி பற்றிய கேள்விகளுக்கு கிசான் அழைப்பு மையம்: 1800-180-1551 (இலவசம்).' },
+    en: { title: 'Farming tips', kcc: 'For crop disease or pesticide questions, call the Kisan Call Centre: 1800-180-1551 (free).' },
+  }[UI.lang];
+  UI.apply(T);
+  document.getElementById('list').innerHTML = TIPS.map(([ico, ta, en]) => {
+    const [title, body] = UI.en ? en : ta;
+    return `<article class="card tip"><span class="n" aria-hidden="true">${ico}</span><div><b>${title}</b><p>${body}</p></div></article>`;
+  }).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – My sales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .kpis div { background: var(--cream); border-radius: 14px; padding: 10px 12px; }
+    .kpis small { display: block; font-size: 12px; font-weight: 800; color: var(--soil-2); }
+    .kpis b { font-size: 22px; font-weight: 800; }
+    .sale-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+    .sale-top b { font-size: 18px; font-weight: 800; }
+    .sale-top strong { font-size: 20px; font-weight: 800; color: var(--paddy-deep); white-space: nowrap; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="head">
+    <a class="icon-btn" href="home.html" aria-label="Back"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 data-i18n="title">என் விற்பனைகள்</h1>
+  </header>
+
+  <main class="page">
+    <section class="card">
+      <div class="kpis">
+        <div><small data-i18n="kCount">விற்பனைகள்</small><b id="kCount">0</b></div>
+        <div><small data-i18n="kKg">மொத்த கிலோ</small><b id="kKg">0</b></div>
+        <div><small data-i18n="kGross">விற்பனைத் தொகை</small><b id="kGross">₹0</b></div>
+        <div><small data-i18n="kNet">கையில் மிஞ்சியது</small><b id="kNet">₹0</b></div>
+      </div>
+    </section>
+
+    <button class="btn btn-primary" id="openForm" type="button" data-i18n="add">+ புதிய விற்பனை பதிவு</button>
+
+    <form class="card" id="form" hidden>
+      <h2 data-i18n="add2">விற்பனை பதிவு</h2>
+      <div class="row2">
+        <label class="f"><span data-i18n="crop">பயிர்</span><select id="crop" data-crops><option value="tomato"></option><option value="onion"></option><option value="paddy"></option><option value="banana"></option><option value="groundnut"></option></select></label>
+        <label class="f"><span data-i18n="mandi">சந்தை</span><select id="mandi" data-mandis><option value="trichy"></option><option value="manapparai"></option><option value="dindigul"></option><option value="oddanchatram"></option><option value="karur"></option></select></label>
+      </div>
+      <div class="row2">
+        <label class="f"><span data-i18n="qty">கிலோ</span><input id="qtyKg" inputmode="numeric"></label>
+        <label class="f"><span data-i18n="price">விலை ₹/கிலோ</span><input id="pricePerKg" inputmode="decimal"></label>
+      </div>
+      <div class="row2">
+        <label class="f"><span data-i18n="date">தேதி</span><input id="soldOn" type="date"></label>
+        <label class="f"><span data-i18n="transport">வண்டி ₹</span><input id="transport" inputmode="decimal" value="0"></label>
+      </div>
+      <div class="row2">
+        <label class="f"><span data-i18n="buyer">வாங்கியவர்</span><input id="buyer" maxlength="60"></label>
+        <label class="f"><span data-i18n="receipt">ரசீது எண்</span><input id="receipt" maxlength="40"></label>
+      </div>
+      <label class="f"><span data-i18n="comm">கமிஷன் %</span><input id="commissionPct" inputmode="decimal" value="8"></label>
+      <button class="btn btn-primary" type="submit" data-i18n="save">சேமி</button>
+      <p class="note" id="err" role="alert"></p>
+    </form>
+
+    <div id="list" style="display:flex;flex-direction:column;gap:12px"></div>
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script>
+  const T = {
+    ta: {
+      title: 'என் விற்பனைகள்', kCount: 'விற்பனைகள்', kKg: 'மொத்த கிலோ', kGross: 'விற்பனைத் தொகை', kNet: 'கையில் மிஞ்சியது',
+      add: '+ புதிய விற்பனை பதிவு', add2: 'விற்பனை பதிவு', crop: 'பயிர்', mandi: 'சந்தை', qty: 'கிலோ', price: 'விலை ₹/கிலோ', date: 'தேதி',
+      transport: 'வண்டி ₹', buyer: 'வாங்கியவர்', receipt: 'ரசீது எண்', comm: 'கமிஷன் %', save: 'சேமி',
+      empty: 'இன்னும் விற்பனை பதிவு இல்லை. சேர்ந்து விற்றது முடிந்தால் தானாகச் சேரும்.',
+      net: v => `கையில் ₹${v}`, vsUp: (v, m, o) => `அன்றைய ${m} விலையை விட கிலோவுக்கு ₹${v} அதிகம் (${o})`,
+      vsDown: (v, m, o) => `அன்றைய ${m} விலையை விட கிலோவுக்கு ₹${v} குறைவு (${o})`, vsSame: (m, o) => `அன்றைய ${m} விலைக்குச் சமம் (${o})`,
+      noMandi: 'அன்று சந்தை விலை பதிவு இல்லை', pool: 'சேர்ந்து விற்றது →', receiptL: 'ரசீது', buyerL: 'வாங்கியவர்', saved: 'சேமிக்கப்பட்டது',
+    },
+    en: {
+      title: 'My sales', kCount: 'Sales', kKg: 'Total kg', kGross: 'Sale amount', kNet: 'Left in hand',
+      add: '+ Record a sale', add2: 'Record a sale', crop: 'Crop', mandi: 'Mandi', qty: 'kg', price: 'Price ₹/kg', date: 'Date',
+      transport: 'Transport ₹', buyer: 'Buyer', receipt: 'Receipt no.', comm: 'Commission %', save: 'Save',
+      empty: 'No sales recorded yet. A finished shared sale is added automatically.',
+      net: v => `₹${v} in hand`, vsUp: (v, m, o) => `₹${v}/kg above ${m}’s price that day (${o})`,
+      vsDown: (v, m, o) => `₹${v}/kg below ${m}’s price that day (${o})`, vsSame: (m, o) => `Same as ${m}’s price that day (${o})`,
+      noMandi: 'No mandi price recorded that day', pool: 'Shared sale →', receiptL: 'Receipt', buyerL: 'Buyer', saved: 'Saved',
+    },
+  }[UI.lang];
+  UI.apply(T);
+  const KG = UI.en ? 'kg' : 'கிலோ';
+  const $ = id => document.getElementById(id);
+
+  // Prefill from the profit calculator
+  const q = new URLSearchParams(location.search);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+  $('soldOn').value = today;
+  $('soldOn').max = today;
+  for (const k of ['crop', 'mandi', 'qtyKg', 'pricePerKg', 'transport', 'commissionPct']) if (q.get(k)) $(k).value = q.get(k);
+  if (q.get('qtyKg')) $('form').hidden = false;
+
+  $('openForm').addEventListener('click', () => { $('form').hidden = !$('form').hidden; });
+
+  async function load() {
+    let r;
+    try { r = await SK.sales.list(); } catch (e) { $('list').innerHTML = `<p class="empty">${UI.esc(UI.errText(e))}</p>`; return; }
+    $('kCount').textContent = r.totals.count;
+    $('kKg').textContent = UI.rs(r.totals.kg);
+    $('kGross').textContent = `₹${UI.rs(r.totals.gross)}`;
+    $('kNet').textContent = `₹${UI.rs(r.totals.net)}`;
+    if (!r.sales.length) { $('list').innerHTML = `<p class="empty">${T.empty}</p>`; return; }
+    $('list').innerHTML = r.sales.map(s => {
+      const v = s.vsMandi;
+      let vs = `<span class="pill-tag warn">${T.noMandi}</span>`;
+      if (v) {
+        const m = UI.mandi(s.mandi), o = UI.origin(v.origin), d = Math.abs(v.diffPerKg);
+        vs = v.diffPerKg > 0 ? `<span class="pill-tag">${T.vsUp(UI.rs(d), m, o)}</span>` : v.diffPerKg < 0 ? `<span class="pill-tag bad">${T.vsDown(UI.rs(d), m, o)}</span>` : `<span class="pill-tag">${T.vsSame(m, o)}</span>`;
+      }
+      return `<article class="card">
+        <div class="sale-top"><b>${SK.CROPS[s.crop]?.ico ?? ''} ${UI.crop(s.crop)} · ${UI.rs(s.qtyKg)} ${KG}</b><strong>${T.net(UI.rs(s.profit.net))}</strong></div>
+        <span class="meta">${UI.day(s.soldOn)} · ${UI.mandi(s.mandi)} · ₹${UI.rs(s.pricePerKg)}/${KG}</span>
+        ${s.buyer || s.receipt ? `<span class="meta">${s.buyer ? `${T.buyerL}: ${UI.esc(s.buyer)}` : ''}${s.buyer && s.receipt ? ' · ' : ''}${s.receipt ? `${T.receiptL}: ${UI.esc(s.receipt)}` : ''}</span>` : ''}
+        <div>${vs}</div>
+        ${s.poolId ? `<a class="meta" style="color:var(--paddy-deep);font-weight:800" href="together.html?pool=${UI.esc(s.poolId)}">${T.pool}</a>` : ''}
+      </article>`;
+    }).join('');
+  }
+
+  $('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('err').textContent = '';
+    const body = Object.fromEntries(['crop', 'mandi', 'qtyKg', 'pricePerKg', 'soldOn', 'transport', 'buyer', 'receipt', 'commissionPct'].map(k => [k, $(k).value.trim()]));
+    try {
+      await SK.sales.add(body);
+      $('form').hidden = true;
+      UI.toast(T.saved);
+      history.replaceState(null, '', 'sales.html');
+      load();
+    } catch (err) { $('err').textContent = UI.errText(err); }
+  });
+
+  load();
+</script>
+</body>
+</html>

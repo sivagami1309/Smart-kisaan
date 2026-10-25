@@ -69,3 +69,21 @@ test('averages several varieties of one crop at one mandi on one day', () => {
   assert.equal(rows[0].modalQ, 2000);
   assert.equal(rows[0].minQ, 1800);
 });
+
+// ---- Lessons from the earlier Smart Kisaan importer ----
+
+test('reads prices written with commas, and treats "NR" as no price', () => {
+  const n = normalise(rec({ modal_price: '1,900', min_price: '1,700', max_price: 'NR' }));
+  assert.equal(n.modalQ, 1900);
+  assert.equal(n.minQ, 1700);
+  assert.ok(Number.isNaN(n.maxQ));
+});
+
+test('matches crop names by keyword, but keeps small onion separate from onion', () => {
+  assert.equal(mapCrop('Banana - Green'), 'banana');
+  assert.equal(mapCrop('Groundnut pods (raw)'), 'groundnut');
+  assert.equal(mapCrop('Paddy(Dhan)(Basmati)'), 'paddy');
+  assert.equal(mapCrop('Onion'), 'onion');
+  assert.equal(mapCrop('Small Onion'), null);
+  assert.equal(mapCrop('Tomato'), 'tomato');
+});

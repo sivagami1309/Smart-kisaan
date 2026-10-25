@@ -29,6 +29,7 @@ export function rankMandis(rows, cost, radius, today) {
         km: row.km,
         lastModal: row.modalQ == null ? null : perKg(row.modalQ),
         lastDate: row.date ?? null,
+        origin: row.origin ?? null,
       });
       continue;
     }
@@ -40,6 +41,8 @@ export function rankMandis(rows, cost, radius, today) {
       freshness: state,
       min: row.minQ == null ? null : perKg(row.minQ),
       max: row.maxQ == null ? null : perKg(row.maxQ),
+      origin: row.origin ?? null,
+      fetchedAt: row.fetchedAt ?? null,
       ...netPrice(row.modalQ, row.km, cost),
     });
   }

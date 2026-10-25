@@ -10,6 +10,14 @@ import { seedDemo } from './seed.js';
 import { offerVerdict } from './offer.js';
 import { smsSegments, parseCode, formatReply } from './sms.js';
 import { runIngest } from './ingest.js';
+import { ApiError, createListing, listingsOf, matchesFor, proposePool, getPoolFor, poolAction, seedDemoNeighbours } from './together.js';
+import { recordSale, salesOf } from './sales.js';
+import { notificationsOf, markRead } from './notifications.js';
+import { profitFor } from './profit.js';
+import { parseVoice, hrefFor } from './voice.js';
+import { createWeather, WeatherError } from './weather.js';
+import { vehicleFor, tripCost } from './pooling.js';
+import { checkAdmin, adminSummary, adminFarmers, adminPools, addManualPrice } from './admin.js';
 import { FRONTEND_DIR, dbPath, localToday, loadEnv } from './paths.js';
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon' };
@@ -57,13 +65,38 @@ function prices(db, today, o) {
   return { ...o, today, dataState: ds, ranked: ranked.map(names), missing: missing.map(names), highestGross };
 }
 
+// Profit for one sale: today's mandi price and an estimated vehicle unless the farmer gives their own
+function profitView(db, today, q) {
+  const o = readOptions({ crop: q.crop, place: q.place });
+  if (!has(MANDIS, q.mandi)) throw new BadRequest(`unknown mandi: ${q.mandi}`);
+  const num = (name, dflt) => (q[name] == null || q[name] === '' ? dflt : Number(q[name]));
+  const qtyKg = num('qtyKg', NaN);
+  if (!(qtyKg >= 10 && qtyKg <= 20000)) throw new BadRequest('quantity must be between 10 and 20,000 kg');
+  const km = distanceKm(o.place, q.mandi);
+  const v = vehicleFor(qtyKg);
+  const transportEstimate = { km, cost: tripCost(km, qtyKg), vehicle: { key: v.key, ta: v.ta, en: v.en } };
+  let pricePerKg = num('pricePerKg', null), priceFrom = null;
+  if (pricePerKg == null) {
+    const row = latestByMandi(db, o.crop, dataState(db, today).source).find(r => r.mandi === q.mandi);
+    if (!row) throw new BadRequest('no price for this mandi yet: enter your own price');
+    pricePerKg = perKg(row.modalQ);
+    priceFrom = { date: row.date, origin: row.origin };
+  }
+  const transport = num('transport', transportEstimate.cost);
+  let profit;
+  try {
+    profit = profitFor({ qtyKg, pricePerKg, transport, commissionPct: num('commissionPct', 8), loading: num('loading', 0), other: num('other', 0) });
+  } catch (e) { throw new BadRequest(e.message); }
+  return { crop: o.crop, mandi: q.mandi, place: o.place, qtyKg, pricePerKg, priceFrom, transportEstimate, profit };
+}
+
 async function readJson(req) {
   let size = 0; const chunks = [];
   for await (const c of req) { size += c.length; if (size > 10_000) throw new BadRequest('body too large'); chunks.push(c); }
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { throw new BadRequest('invalid JSON'); }
 }
 
-export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR }) {
+export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR, weather = createWeather(), adminToken = process.env.SK_ADMIN_TOKEN || '' }) {
   const root = resolve(frontendDir);
 
   // Demo history is dated relative to "today"; when the date changes (server left running
@@ -96,6 +129,32 @@ export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR }
       const best = p.ranked[0] ?? null;
       return { crop: o.crop, offer, qty: Number(body.qty) || 0, best, verdict: offerVerdict(offer, best?.net, Number(body.qty) || 0), dataState: p.dataState };
     },
+    'GET /api/profit': q => profitView(db, today(), q),
+    'GET /api/voice': q => { const command = parseVoice(q.text); return { command, href: hrefFor(command) }; },
+    'GET /api/markets': q => {
+      const place = q.place ?? 'manapparai';
+      if (!has(PLACES, place)) throw new BadRequest(`unknown place: ${place}`);
+      const markets = Object.entries(MANDIS).map(([key, m]) => ({ key, ta: m.ta, en: m.en, lat: m.lat, lon: m.lon, km: distanceKm(place, key) }));
+      return { place, markets: markets.sort((a, b) => a.km - b.km) };
+    },
+    'GET /api/board': q => {
+      const crops = Object.entries(CROPS).map(([crop, c]) => {
+        const p = prices(db, today(), readOptions({ ...q, crop }));
+        const b = p.ranked[0];
+        return { crop, ta: c.ta, en: c.en, ico: c.ico, best: b ? { mandi: b.mandi, ta: b.ta, en: b.en, net: b.net, modal: b.modal, date: b.date, freshness: b.freshness, origin: b.origin } : null };
+      });
+      return { today: today(), dataState: dataState(db, today()), crops };
+    },
+    'GET /api/weather': async q => {
+      const place = q.place ?? 'manapparai';
+      if (!has(PLACES, place)) throw new BadRequest(`unknown place: ${place}`);
+      try {
+        return { place, ...(await weather.get(PLACES[place].lat, PLACES[place].lon)) };
+      } catch (e) {
+        if (e instanceof WeatherError) throw new ApiError(e.status, e.status === 503 ? 'weather_unavailable' : 'bad_place', e.message);
+        throw e;
+      }
+    },
     'POST /api/sms/simulate': (_, body) => {
       const lang = body.lang === 'en' ? 'en' : 'ta';
       const crop = parseCode(body.text);
@@ -110,6 +169,35 @@ export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR }
       }
       return { simulated: true, crop, reply, chars: reply.length, segments: smsSegments(reply) };
     },
+  };
+
+  // Sell together. Prototype identity: a random id kept on the farmer's phone (see SELL_TOGETHER_DESIGN.md)
+  const farmerOf = req => {
+    const id = req.headers['x-farmer-id'];
+    if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{16,64}$/.test(id)) throw new ApiError(401, 'no_farmer', 'missing farmer id');
+    return id;
+  };
+  const now = () => new Date().toISOString();
+  const together = {
+    'POST /api/listings': (req, _, body) => ({ __status: 201, listing: createListing(db, farmerOf(req), body, now()) }),
+    'GET /api/listings/mine': req => ({ listings: listingsOf(db, farmerOf(req)) }),
+    'GET /api/matches': (req, q) => ({ matches: matchesFor(db, farmerOf(req), q.listing) }),
+    'POST /api/pools': (req, _, body) => ({ __status: 201, pool: proposePool(db, farmerOf(req), body.listings, now()) }),
+    'POST /api/sales': (req, _, body) => { recordSale(db, farmerOf(req), body, today(), now()); return { __status: 201, ok: true }; },
+    'GET /api/sales': req => salesOf(db, farmerOf(req)),
+    'GET /api/notifications': req => notificationsOf(db, farmerOf(req)),
+    'POST /api/notifications/read': (req, _, body) => ({ unread: markRead(db, farmerOf(req), body.ids) }),
+    'GET /api/admin/summary': req => { checkAdmin(req, adminToken); return adminSummary(db, today()); },
+    'GET /api/admin/farmers': req => { checkAdmin(req, adminToken); return { farmers: adminFarmers(db) }; },
+    'GET /api/admin/pools': req => { checkAdmin(req, adminToken); return { pools: adminPools(db) }; },
+    'POST /api/admin/prices': (req, _, body) => { checkAdmin(req, adminToken); addManualPrice(db, body, today(), now()); return { __status: 201, ok: true }; },
+  };
+  const poolRoute = (method, pathname) => {
+    const m = pathname.match(/^\/api\/pools\/([0-9a-f-]{36})(\/action)?$/);
+    if (!m) return null;
+    if (method === 'GET' && !m[2]) return req => ({ pool: getPoolFor(db, farmerOf(req), m[1]) });
+    if (method === 'POST' && m[2]) return (req, _, body) => ({ pool: poolAction(db, farmerOf(req), m[1], body, now()) });
+    return null;
   };
 
   async function serveStatic(pathname, res) {
@@ -140,12 +228,17 @@ export function createApp({ db, today = localToday, frontendDir = FRONTEND_DIR }
         return await serveStatic(url.pathname, res);
       }
       rollDemo();
-      const handler = routes[`${req.method} ${url.pathname}`];
-      if (!handler) return send(res, 404, { error: 'not found' });
+      const key = `${req.method} ${url.pathname}`;
+      const query = Object.fromEntries(url.searchParams);
       const body = req.method === 'POST' ? await readJson(req) : {};
-      send(res, 200, await handler(Object.fromEntries(url.searchParams), body));
+      if (routes[key]) return send(res, 200, await routes[key](query, body));
+      const own = together[key] ?? poolRoute(req.method, url.pathname);
+      if (!own) return send(res, 404, { error: 'not found' });
+      const { __status = 200, ...out } = own(req, query, body);
+      send(res, __status, out);
     } catch (e) {
       if (e instanceof BadRequest) send(res, 400, { error: e.message });
+      else if (e instanceof ApiError) send(res, e.status, { error: e.message, code: e.code });
       else { console.error(e); send(res, 500, { error: 'server error' }); }
     }
   });
@@ -155,6 +248,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   loadEnv();
   const db = openDb(dbPath());
   const added = seedDemo(db, localToday()); // keeps the demo history current; never touches live rows
+  seedDemoNeighbours(db, localToday()); // labelled demo farmers for the sell-together demo
   const key = process.env.DATA_GOV_IN_API_KEY;
   const ingest = () => runIngest({ db, apiKey: key }).then(r => console.log(r.ok ? `Ingested: ${r.message}` : `Ingestion failed: ${r.message}`));
   if (key) { ingest(); setInterval(ingest, 6 * 3600e3).unref(); }

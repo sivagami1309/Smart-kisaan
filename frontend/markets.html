@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ec">
+  <title>Smart Kisaan – Nearby markets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .mkt { display: flex; align-items: center; gap: 12px; }
+    .mkt .km { width: 64px; height: 64px; border-radius: 16px; background: var(--paddy-tint); display: flex; flex-direction: column; align-items: center; justify-content: center; flex: none; }
+    .mkt .km b { font-size: 22px; font-weight: 800; line-height: 1; color: var(--paddy-deep); }
+    .mkt .km span { font-size: 12px; font-weight: 800; color: var(--soil-2); }
+    .mkt .name { flex: 1; min-width: 0; }
+    .mkt .name b { display: block; font-size: 19px; font-weight: 800; }
+    .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+    .two a { min-height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; text-decoration: none; border: 2px solid var(--paddy); color: var(--paddy-deep); }
+    .two a.solid { background: var(--paddy); color: #fff; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="head">
+    <a class="icon-btn" href="home.html" aria-label="Back"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="#2e2016" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <h1 data-i18n="title">அருகிலுள்ள சந்தைகள்</h1>
+  </header>
+  <main class="page">
+    <p class="meta" id="from"></p>
+    <div id="list" style="display:flex;flex-direction:column;gap:12px"></div>
+    <p class="note" data-i18n="note">தூரம் சாலை வழி மதிப்பீடு. வழி காட்ட Google Maps திறக்கும்.</p>
+  </main>
+</div>
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script>
+  const T = {
+    ta: { title: 'அருகிலுள்ள சந்தைகள்', note: 'தூரம் சாலை வழி மதிப்பீடு. வழி காட்ட Google Maps திறக்கும்.', from: p => `${p} அருகில், அருகிலிருந்து தூரம் வரை`, km: 'கி.மீ', dirs: 'வழி காட்டு', prices: 'இன்றைய விலை' },
+    en: { title: 'Nearby markets', note: 'Distances are road estimates. Directions open Google Maps.', from: p => `Near ${p}, nearest first`, km: 'km', dirs: 'Directions', prices: 'Today’s prices' },
+  }[UI.lang];
+  UI.apply(T);
+  const $ = id => document.getElementById(id);
+  $('from').textContent = T.from(SK.placeName(UI.lang));
+  const crop = SK.store.get('sk-crop') || 'tomato';
+  SK.markets().then(r => {
+    $('list').innerHTML = r.markets.map(m => `
+      <article class="card">
+        <div class="mkt"><span class="km"><b>${m.km}</b><span>${T.km}</span></span><span class="name"><b>${UI.esc(UI.en ? m.en : m.ta)}</b><span class="meta">${UI.esc(UI.en ? m.ta : m.en)}</span></span></div>
+        <div class="two">
+          <a class="solid" href="results.html?crop=${encodeURIComponent(crop)}">${T.prices}</a>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lon}" target="_blank" rel="noopener">${T.dirs}</a>
+        </div>
+      </article>`).join('');
+  }).catch(e => { $('list').innerHTML = `<p class="empty">${UI.esc(UI.errText(e))}</p>`; });
+</script>
+</body>
+</html>

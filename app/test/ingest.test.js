@@ -9,34 +9,50 @@ const record = (market, commodity, modal) => ({
   arrival_date: '25/10/2026', min_price: String(modal - 200), max_price: String(modal + 200), modal_price: String(modal),
 });
 
-// A fake data.gov.in: serves pages of records for whichever commodity is asked for
-function fakeApi(byCommodity, { status = 200 } = {}) {
+// A fake data.gov.in: serves pages of all Tamil Nadu records (crops are matched by our own code)
+function fakeApi(records, { status = 200 } = {}) {
+  if (!Array.isArray(records)) records = Object.values(records).flat();
   const calls = [];
   const fetchFn = async url => {
     calls.push(url);
     const u = new URL(url);
-    const all = byCommodity[u.searchParams.get('filters[commodity]')] || [];
     const offset = Number(u.searchParams.get('offset')), limit = Number(u.searchParams.get('limit'));
-    return { ok: status === 200, status, json: async () => ({ records: all.slice(offset, offset + limit) }) };
+    return { ok: status === 200, status, json: async () => ({ records: records.slice(offset, offset + limit) }) };
   };
   return { fetchFn, calls };
 }
 
-test('builds the data.gov.in URL with key, state and commodity filters', () => {
-  const u = new URL(buildUrl({ apiKey: 'KEY', commodity: 'Tomato', offset: 0, limit: 100 }));
+test('builds the data.gov.in URL with key and state filter, no commodity filter', () => {
+  const u = new URL(buildUrl({ apiKey: 'KEY', offset: 0, limit: 100 }));
   assert.equal(u.origin + u.pathname, `https://api.data.gov.in/resource/${RESOURCE_ID}`);
   assert.equal(u.searchParams.get('api-key'), 'KEY');
   assert.equal(u.searchParams.get('format'), 'json');
   assert.equal(u.searchParams.get('filters[state]'), 'Tamil Nadu');
-  assert.equal(u.searchParams.get('filters[commodity]'), 'Tomato');
+  assert.equal(u.searchParams.get('filters[commodity]'), null);
 });
 
 test('pages through results until a short page', async () => {
   const many = Array.from({ length: 5 }, (_, i) => record('Gandhi Market', 'Tomato', 2000 + i));
-  const { fetchFn, calls } = fakeApi({ Tomato: many });
-  const recs = await fetchAll({ apiKey: 'K', fetchFn, limit: 2, crops: ['Tomato'] });
+  const { fetchFn, calls } = fakeApi(many);
+  const recs = await fetchAll({ apiKey: 'K', fetchFn, limit: 2 });
   assert.equal(recs.length, 5);
   assert.equal(calls.length, 3);
+});
+
+test('stops after the page limit so a runaway feed cannot loop for ever', async () => {
+  const endless = Array.from({ length: 50 }, (_, i) => record('Gandhi Market', 'Tomato', 2000 + i));
+  const { fetchFn, calls } = fakeApi(endless);
+  await fetchAll({ apiKey: 'K', fetchFn, limit: 5, maxPages: 3 });
+  assert.equal(calls.length, 3);
+});
+
+test('keeps crop variants like "Banana - Green" that an exact filter would miss', async () => {
+  const { fetchFn } = fakeApi([record('Gandhi Market', 'Banana - Green', 2200), record('Gandhi Market', 'Small Onion', 4000)]);
+  const db = openDb();
+  const res = await runIngest({ db, apiKey: 'K', fetchFn, now: '2026-10-25T06:00:00Z' });
+  assert.equal(res.inserted, 1);
+  assert.equal(latestByMandi(db, 'banana', 'live')[0].modalQ, 2200);
+  assert.equal(latestByMandi(db, 'onion', 'live').length, 0);
 });
 
 test('ingests, cleans and stores live rows, and logs the run', async () => {

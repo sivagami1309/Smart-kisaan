@@ -7,7 +7,7 @@ Node 22.13+ only: no packages to install (uses built-in `node:http`, `node:sqlit
 
 ```bash
 cd project/app
-npm test          # 50 tests: price rules, cleaning, storage, ingestion, offer check, SMS, API
+npm test          # 131 tests: prices, cleaning, storage, ingestion, offer check, SMS, sell together, profit, sales, notifications, voice, weather, admin, API
 npm start         # http://localhost:5173  (screens + API)
 ```
 
@@ -35,6 +35,36 @@ Open `http://localhost:5173` on a phone-sized window. `http://localhost:5173/flo
 | GET | `/api/trend?crop=tomato&mandi=trichy&days=7` | Daily modal ₹/kg |
 | POST | `/api/offer-check` `{crop, offer, qty}` | Low / fair / good verdict and the gap |
 | POST | `/api/sms/simulate` `{text, lang}` | SMS reply text and SMS count (simulated) |
+
+### More features (ported from the earlier project – see `docs/ALL_FEATURES_DESIGN.md`)
+
+| Method | Path | Returns |
+| --- | --- | --- |
+| GET | `/api/profit?crop&mandi&qtyKg[&pricePerKg&transport&commissionPct&loading&other]` | Profit for one sale; today’s price and a vehicle estimate unless given |
+| GET / POST | `/api/sales` | My sales with profit and that day’s mandi price · record a sale (needs `X-Farmer-Id`) |
+| GET | `/api/notifications` · POST `/api/notifications/read` | Pool updates for this farmer · mark read |
+| GET | `/api/board` | Every crop’s best mandi today |
+| GET | `/api/markets?place=` | Mandis nearest first, with coordinates for directions |
+| GET | `/api/weather?place=` | 5-day forecast from Open-Meteo (internet needed; cached 1 hour) |
+| GET | `/api/voice?text=` | Tamil/English voice command → screen to open |
+| GET / POST | `/api/admin/summary`, `/farmers`, `/pools`, `/prices` | Admin console; needs `SK_ADMIN_TOKEN` in `.env` and the `X-Admin-Token` header |
+
+To switch admin on, add to `project/app/.env`: `SK_ADMIN_TOKEN=<a long password>`, restart, and open `/admin.html`. Without it, admin is off.
+
+### Sell together (கூட்டு விற்பனை)
+
+Nearby farmers share one vehicle to the mandi; see `docs/SELL_TOGETHER_DESIGN.md`. Requests carry `X-Farmer-Id`, a random id kept on the phone (prototype only, not a login).
+
+| Method | Path | Returns |
+| --- | --- | --- |
+| POST | `/api/listings` `{crop, qtyKg, place, mandi, willing, name}` | The new listing |
+| GET | `/api/listings/mine` | This farmer’s listings |
+| GET | `/api/matches?listing=` | Nearby farmers, each side’s saving, best first |
+| POST | `/api/pools` `{listings: [mine, theirs]}` | Proposed pool with the cost split |
+| GET | `/api/pools/:id` | Members, state, split, history (members only) |
+| POST | `/api/pools/:id/action` `{action, pricePerKg?, asDemo?}` | accept, decline, arrange, sold, complete |
+
+Demo neighbours near Manapparai are seeded with names ending “(மாதிரி)”; a member may answer for them with `asDemo`, never for a real farmer.
 
 ## Rules the tests lock in
 
