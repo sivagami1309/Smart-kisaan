@@ -37,7 +37,8 @@
     .best .price { display: flex; align-items: baseline; gap: 6px; margin-top: 10px; }
     .best .price b { font-size: 52px; line-height: 1; font-weight: 800; letter-spacing: -0.02em; }
     .best .price span { font-size: 18px; font-weight: 700; opacity: .9; }
-    .best .meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 15px; font-weight: 600; opacity: .92; }
+    /* Explicit white: the shared .meta style in styles.css is dark brown, unreadable on this green card */
+    .best .meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 15px; font-weight: 600; opacity: .92; color: #fff; }
     .best .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; position: relative; z-index: 1; }
     .best .actions a, .best .actions button {
       min-height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;

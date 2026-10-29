@@ -64,7 +64,9 @@
     .split th { text-align: right; font-size: 12px; color: var(--soil-2); font-weight: 800; padding: 4px 3px 6px; }
     .split th:first-child, .split td:first-child { text-align: left; }
     .split td { text-align: right; padding: 8px 3px; border-top: 2px solid #f1e8d8; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
-    .split td:first-child { white-space: normal; overflow-wrap: anywhere; }
+    /* Tamil words break only at spaces, never mid-word; "(you)" sits on its own small line */
+    .split td:first-child { white-space: normal; }
+    .split td:first-child .meta { display: block; font-size: 12px; }
     .split td.gain { color: var(--paddy-deep); font-weight: 800; }
     .total { font-size: 15px; font-weight: 700; background: var(--paddy-tint); border-radius: 12px; padding: 10px 12px; }
     .actions { display: flex; flex-direction: column; gap: 10px; }
@@ -181,7 +183,7 @@
       vehicleTrip: (v, km, c) => `${v} · ${km} கி.மீ பயணம் · மொத்தம் ₹${c}`,
       states: { PROPOSED: 'சம்மதத்திற்குக் காத்திருக்கிறது', CONFIRMED: 'இருவரும் சம்மதம் ✓', TRANSPORT_ARRANGED: 'வண்டி ஏற்பாடு ஆனது', SOLD: 'விற்பனை ஆனது', COMPLETED: 'முடிந்தது', CANCELLED: 'ரத்து செய்யப்பட்டது' },
       consented: 'சம்மதம் ✓', waiting: 'காத்திருக்கிறது', you: 'நீங்கள்',
-      th: ['பெயர்', 'கிலோ', 'பங்கு', 'தனியாக', 'மிச்சம்'], thSold: ['பெயர்', 'கிலோ', 'விற்பனை', 'வண்டிப் பங்கு', 'கையில்'],
+      th: ['பெயர்', 'பங்கு', 'தனியாக', 'மிச்சம்'], thSold: ['பெயர்', 'விற்பனை', 'வண்டிப் பங்கு', 'கையில்'],
       savingTotal: (s) => `இருவருக்கும் சேர்த்து ₹${s} மிச்சம்`, soldAt: p => `கிலோ ₹${p}-க்கு விற்றது (கமிஷனுக்கு முன்)`,
       accept: 'சம்மதம் தருகிறேன்', decline: 'வேண்டாம் (ரத்து)', demoAccept: n => `DEMO: ${n} சார்பாக சம்மதம்`,
       arrange: 'வண்டி ஏற்பாடு செய்தேன்', salePrice: 'விற்ற விலை (₹/கிலோ)', sold: 'விற்பனை பதிவு', complete: 'பணம் பிரித்தாகிவிட்டது – முடி',
@@ -204,7 +206,7 @@
       vehicleTrip: (v, km, c) => `${v} · ${km} km trip · total ₹${c}`,
       states: { PROPOSED: 'Waiting for consent', CONFIRMED: 'Both agreed ✓', TRANSPORT_ARRANGED: 'Transport arranged', SOLD: 'Sold', COMPLETED: 'Completed', CANCELLED: 'Cancelled' },
       consented: 'Agreed ✓', waiting: 'Waiting', you: 'You',
-      th: ['Name', 'kg', 'Share', 'Alone', 'Saving'], thSold: ['Name', 'kg', 'Sale', 'Transport', 'In hand'],
+      th: ['Name', 'Share', 'Alone', 'Saving'], thSold: ['Name', 'Sale', 'Transport', 'In hand'],
       savingTotal: s => `Together you save ₹${s}`, soldAt: p => `Sold at ₹${p}/kg (before commission)`,
       accept: 'I agree', decline: 'No thanks (cancel)', demoAccept: n => `DEMO: agree on behalf of ${n}`,
       arrange: 'I arranged the vehicle', salePrice: 'Sale price (₹/kg)', sold: 'Record sale', complete: 'Money shared – finish',
@@ -342,10 +344,11 @@
     const sold = p.soldPricePerKg != null;
     const head = (sold ? t.thSold : t.th).map(h => `<th>${h}</th>`).join('');
     const body = p.plan.members.map(m => {
-      const who = label(m);
+      // kg sits under the name so the money columns fit a small phone
+      const who = `${label(m)}<span class="meta">${t.kg(m.qtyKg)}</span>`;
       return sold
-        ? `<tr><td>${who}</td><td>${m.qtyKg}</td><td>₹${rs(m.gross)}</td><td>₹${rs(m.sharedPart)}</td><td class="gain">₹${rs(m.takeHome)}</td></tr>`
-        : `<tr><td>${who}</td><td>${m.qtyKg}</td><td>₹${rs(m.sharedPart)}</td><td>₹${rs(m.soloCost)}</td><td class="gain">₹${rs(m.benefit)}</td></tr>`;
+        ? `<tr><td>${who}</td><td>₹${rs(m.gross)}</td><td>₹${rs(m.sharedPart)}</td><td class="gain">₹${rs(m.takeHome)}</td></tr>`
+        : `<tr><td>${who}</td><td>₹${rs(m.sharedPart)}</td><td>₹${rs(m.soloCost)}</td><td class="gain">₹${rs(m.benefit)}</td></tr>`;
     }).join('');
     $('split').innerHTML = `<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
     $('saving').textContent = sold ? `${t.savingTotal(rs(p.plan.totalSaving))} · ${t.soldAt(p.soldPricePerKg)}` : t.savingTotal(rs(p.plan.totalSaving));
